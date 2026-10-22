@@ -217,29 +217,49 @@ footer{color:var(--faint);font-size:12.5px;padding-block:0 40px}
 
     <!-- ───────── 소셜박스 ───────── -->
     <section class="view" id="v-socialbox" role="tabpanel" aria-labelledby="tab-socialbox" hidden>
-      <div class="view-head"><h2>소셜박스 매출</h2><p>월간 총 매출 시트의 소셜박스(마켓) 매출</p></div>
+      <div class="view-head"><h2>소셜박스 매출</h2><p>월간 총 매출 시트의 소셜박스(마켓) 매출과 월별 판매 탭의 일일 판매</p></div>
       <div class="kpis" id="sb-kpis"></div>
       <div class="grid">
         <section class="panel wide">
           <div class="phead"><div><h3>소셜박스 월별 매출</h3><p>월 매출(막대)과 팀 전체 매출 대비 비중(선)</p></div></div>
           <div class="chart-box"><canvas id="c-sb" role="img" aria-label="소셜박스 월별 매출"></canvas></div>
         </section>
+        <section class="panel wide" id="sb-daily">
+          <div class="phead"><div><h3 class="dly-title">일일 판매</h3><p class="dly-desc"></p></div><select class="dly-month" aria-label="월 선택"></select></div>
+          <div class="dly-body">
+            <div class="mini dly-mini"></div>
+            <div class="chart-box"><canvas id="c-sb-daily" role="img" aria-label="소셜박스 일별 판매"></canvas></div>
+            <p class="note dly-note"></p>
+            <div class="tbl"><table class="dly-refund"></table></div>
+          </div>
+          <p class="note dly-missing" hidden></p>
+        </section>
         <section class="panel wide">
           <div class="phead"><div><h3>월별 상세</h3><p>시트에 입력된 줄 그대로 보여줍니다</p></div></div>
           <div class="tbl"><table id="t-sb"></table></div>
-          <p class="note">제품·채널별 상세 시트를 웹에 게시해 주시면 이 탭에 추가할 수 있어요.</p>
+          
         </section>
       </div>
     </section>
 
     <!-- ───────── 바디코 ───────── -->
     <section class="view" id="v-bodyco" role="tabpanel" aria-labelledby="tab-bodyco" hidden>
-      <div class="view-head"><h2>바디코 매출</h2><p>월간 총 매출 시트의 바디코(자체몰) 매출과 원가 정산 시트의 품목별 판매</p></div>
+      <div class="view-head"><h2>바디코 매출</h2><p>월간 총 매출 시트의 바디코(자체몰) 매출, 월별 판매 탭의 채널별 일일 판매, 원가 정산 시트의 품목별 판매</p></div>
       <div class="kpis" id="bc-kpis"></div>
       <div class="grid">
         <section class="panel wide">
           <div class="phead"><div><h3>바디코 월별 매출</h3><p>자체몰 월 매출(막대)과 팀 전체 매출 대비 비중(선)</p></div></div>
           <div class="chart-box"><canvas id="c-bc" role="img" aria-label="바디코 월별 매출"></canvas></div>
+        </section>
+        <section class="panel wide" id="bc-daily">
+          <div class="phead"><div><h3 class="dly-title">일일 판매</h3><p class="dly-desc"></p></div><select class="dly-month" aria-label="월 선택"></select></div>
+          <div class="dly-body">
+            <div class="mini dly-mini"></div>
+            <div class="chart-box"><canvas id="c-bc-daily" role="img" aria-label="바디코 채널별 일별 판매"></canvas></div>
+            <p class="note dly-note"></p>
+            <div class="tbl"><table class="dly-refund"></table></div>
+          </div>
+          <p class="note dly-missing" hidden></p>
         </section>
       </div>
 
@@ -280,6 +300,15 @@ footer{color:var(--faint);font-size:12.5px;padding-block:0 40px}
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ74jUbjtDP8KKrBNWqWD5tKwqFmTojI1TI0nAa4atkTwUQW91LncG4hspoE2o2hfZRz7TR4I-NXRSr/pub?output=csv';
 // 바디코 원가 정산 시트 (웹에 게시 → CSV 링크). 따옴표 '' 사이에 붙여넣으세요.
 const BODYCO_CSV_URL = '';
+
+// 월별 판매 탭 (★2026. 10 판매 등). 새 달 탭이 생기면 같은 모양으로 한 줄 추가하세요.
+// 링크는 웹에 게시에서 해당 탭을 고르면 나오는 CSV 링크입니다.
+const SALES_TABS = [
+  { month: '2026-10', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRLE-6OXC9aR9WRZJ7s1OxTqFJdip82c-9fFiQ5PMKgvl5ErI5spYoU27I_ffX7D4TRkqbAkphZE_rD/pub?gid=1538088700&single=true&output=csv' },
+  // { month: '2026-09', url: '9월 판매 탭 링크' },
+];
+// 판매 탭의 채널이 어느 사업 매출인지 (다르면 고치세요)
+const CHANNEL_OWNER = { '카페24_소셜박스': '소셜박스', '카페24_바디코': '바디코', '지그재그': '바디코', '올리브영': '바디코' };
 
 const BUSINESS_NAMES = ['소셜박스', '바디코'];   // 크리에이터가 아닌 '사업'으로 볼 이름
 const AUTO_REFRESH_MINUTES = 5;                  // 자동 새로고침 간격(분)
@@ -323,8 +352,98 @@ const toGrid = rows => {
 function detectSheet(rows) {
   const flat = rows.slice(0, 40).map(r => r.join('|')).join('\n');
   if (flat.includes('구분') && flat.includes('누적')) return 'main';
+  if (flat.includes('일일 판매') || (flat.includes('날짜') && flat.includes('요일'))) return 'daily';
   if (flat.includes('품목') && flat.includes('정산')) return 'bodyco';
   return null;
+}
+
+/* 월별 판매 탭 (일일 판매 집계 + 반품/취소 + 마켓 일정) */
+function parseDailySales(rows, monthHint) {
+  const grid = toGrid(rows);
+  const isDate = s => /^\d{1,2}\/\d{1,2}$/.test(s);
+  // 헤더 줄: '날짜'와 '합계'가 함께 있는 줄
+  const hi = grid.findIndex(r => r.includes('날짜') && r.includes('합계'));
+  if (hi < 0) throw new Error('판매 탭에서 "날짜 · 합계" 헤더를 찾지 못했어요.');
+  const H = grid[hi];
+  // 각 '날짜' 칸 위쪽에서 표 제목 찾기 (병합 셀이라 제목은 첫 칸에만 있음)
+  const titleAbove = c => { for (let i = hi - 1; i >= 0; i--) if (grid[i][c]) return grid[i][c]; return ''; };
+  const dateCols = H.map((c, i) => (c === '날짜' ? i : -1)).filter(i => i >= 0);
+  const sections = dateCols.map((c, k) => ({ c, end: k + 1 < dateCols.length ? dateCols[k + 1] : H.length, title: titleAbove(c) }));
+  const main = sections.find(s => s.title.includes('판매')) || sections[0];
+  const totalCol = H.indexOf('합계', main.c);
+  const dowCol = H.indexOf('요일', main.c);
+  const channels = [];
+  for (let i = (dowCol >= 0 ? dowCol : main.c) + 1; i < totalCol; i++) if (H[i]) channels.push({ name: H[i], col: i });
+
+  const monthFromTitle = (main.title.match(/(\d{1,2})\s*월/) || [])[1];
+  const result = { month: monthHint || null, monthNum: monthFromTitle ? Number(monthFromTitle) : (monthHint ? Number(monthHint.slice(5)) : null),
+    title: main.title, channels: channels.map(c => c.name), days: [], declared: null, final: null, refunds: [], markets: [] };
+
+  for (let i = hi + 1; i < grid.length; i++) {
+    const r = grid[i], d = r[main.c];
+    if (isDate(d)) {
+      const values = {}; let any = false;
+      channels.forEach(ch => { const v = parseWon(r[ch.col]); values[ch.name] = v; if (v !== null) any = true; });
+      result.days.push({ d, day: Number(d.split('/')[1]), dow: dowCol >= 0 ? r[dowCol] : '', values, total: parseWon(r[totalCol]), empty: !any });
+    } else if (d === '합계') {
+      result.declared = { total: parseWon(r[totalCol]) };
+      channels.forEach(ch => (result.declared[ch.name] = parseWon(r[ch.col])));
+    }
+    const fi = r.findIndex(c => c.includes('최종 합계'));
+    if (fi >= 0) { const v = r.slice(fi + 1).map(parseWon).filter(v => v !== null); if (v.length) result.final = v.at(-1); }
+  }
+
+  // 반품/취소 표: 제목에 [바디코]·[소셜박스]와 반품/취소가 들어 있음
+  for (const s of sections) {
+    if (s === main) continue;
+    const biz = (s.title.match(/\[(.+?)\]/) || [])[1] || '기타';
+    const kind = s.title.includes('반품') ? '반품' : s.title.includes('취소') ? '취소' : '환불';
+    const find = kw => { for (let i = s.c + 1; i < s.end; i++) if (H[i].includes(kw)) return i; return -1; };
+    const amtCol = find('금액'), prodCol = find('상품'), noteCol = find('비고');
+    let declared = null;
+    for (let i = hi + 1; i < grid.length; i++) {
+      const r = grid[i], d = r[s.c];
+      if (d === '합계') { declared = parseWon(r[amtCol]); break; }
+      if (!isDate(d)) continue;
+      const amt = parseWon(r[amtCol]);
+      if (amt === null && !(r[prodCol] || '')) continue;
+      result.refunds.push({ biz, kind, d, day: Number(d.split('/')[1]), amt: amt || 0, product: r[prodCol] || '', note: noteCol >= 0 ? r[noteCol] : '' });
+    }
+    (result.refundDeclared ||= []).push({ biz, kind, declared, calc: sumArr(result.refunds.filter(x => x.biz === biz && x.kind === kind).map(x => x.amt)) });
+  }
+
+  // 마켓 진행 일정: "2026.10.6-10.8 쑤니X휙", "2026. 10.13~10.16 바니X바디코"
+  const re = /(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\s*[-~]\s*(?:(\d{1,2})\.\s*)?(\d{1,2})\s+(.+)/;
+  for (const r of grid) for (const c of r) {
+    const m = c.match(re);
+    if (m) result.markets.push({ fromM: +m[2], from: +m[3], toM: +(m[4] || m[2]), to: +m[5], name: m[6].trim() });
+  }
+  return result;
+}
+function analyzeDaily(s) {
+  const won = n => '₩' + Math.round(n).toLocaleString('ko-KR');
+  const checks = [], label = `${s.monthNum}월 판매`;
+  const chTotals = {};
+  s.channels.forEach(ch => (chTotals[ch] = sumArr(s.days.map(d => d.values[ch]))));
+  const total = sumArr(Object.values(chTotals));
+  const badDays = s.days.filter(d => !d.empty && d.total !== null && Math.round(sumArr(s.channels.map(ch => d.values[ch]))) !== Math.round(d.total));
+  checks.push({ st: badDays.length ? 'ng' : 'ok', t: `${label}: 날짜별 채널 합 = 그날 합계 ${badDays.length ? `불일치 ${badDays.length}일 (${badDays.map(d => d.d).join(', ')})` : '(모두 일치)'}` });
+  if (s.declared) {
+    const bad = s.channels.filter(ch => s.declared[ch] !== null && Math.round(s.declared[ch]) !== Math.round(chTotals[ch]));
+    checks.push({ st: bad.length ? 'ng' : 'ok', t: `${label}: 채널별 월 합계 ${bad.length ? '≠ 시트 합계 (' + bad.join(', ') + ')' : '= 시트 합계'} · 전체 ${won(total)}` });
+  }
+  (s.refundDeclared || []).forEach(r => { if (r.declared !== null && Math.round(r.declared) !== Math.round(r.calc))
+    checks.push({ st: 'ng', t: `${label}: [${r.biz}] ${r.kind} 합계 ${won(r.calc)} ≠ 시트 ${won(r.declared)}` }); });
+  const refundAll = sumArr(s.refunds.map(r => r.amt));
+  if (s.final !== null) {
+    const ok = Math.round(total - refundAll) === Math.round(s.final);
+    checks.push({ st: ok ? 'ok' : 'ng', t: `${label}: 판매 ${won(total)} − 반품·취소 ${won(refundAll)} ${ok ? '=' : '≠'} 시트 최종 합계 ${won(s.final)}` });
+  }
+  const byBiz = {};
+  s.channels.forEach(ch => { const b = CHANNEL_OWNER[ch] || '기타'; (byBiz[b] ||= { channels: [], sales: 0, refunds: 0 }); byBiz[b].channels.push(ch); byBiz[b].sales += chTotals[ch]; });
+  s.refunds.forEach(r => { (byBiz[r.biz] ||= { channels: [], sales: 0, refunds: 0 }); byBiz[r.biz].refunds += r.amt; });
+  const lastDay = s.days.reduce((n, d) => (!d.empty ? d.day : n), 0);
+  return { ...s, chTotals, total, refundAll, byBiz, checks, lastDay };
 }
 
 /* 월간 총 매출 시트 */
@@ -550,16 +669,23 @@ function alpha(hex, a) {
 
 const VIEWS = ['overview', 'creators', 'socialbox', 'bodyco'];
 let view = 'overview', charts = {}, A = null, B = null, B_err = null, selected = null;
-const sourceState = { main: null, bodyco: null };
+const SALES = {}, SALES_ERR = {};   // 월별 판매 탭: { '2026-10': 분석 결과 }
+const dailyMonth = {};              // 탭별로 고른 달
+const sourceState = { main: null, bodyco: null, sales: null };
 
 /* ── 불러오기 ── */
 function updateStatus() {
-  const m = sourceState.main, b = sourceState.bodyco;
+  const m = sourceState.main, b = sourceState.bodyco, s = sourceState.sales;
   const t = new Date(), hm = `${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}`;
-  if (m === 'loading' || b === 'loading') return setStatus('load', '데이터 불러오는 중…');
-  if (m && m.ok && (!BODYCO_CSV_URL && !b || (b && b.ok))) return setStatus('ok', `${m.src} · ${hm} 업데이트`);
-  if (m && m.ok) return setStatus('part', `${hm} · 바디코 정산 ${BODYCO_CSV_URL ? '불러오기 실패' : '미연결'}`);
-  setStatus('err', '불러오기 실패');
+  if ([m, b, s].includes('loading')) return setStatus('load', '데이터 불러오는 중…');
+  if (!(m && m.ok)) return setStatus('err', '불러오기 실패');
+  const issues = [];
+  if (BODYCO_CSV_URL && !(b && b.ok)) issues.push('바디코 정산 실패');
+  if (!BODYCO_CSV_URL && !B) issues.push('바디코 정산 미연결');
+  const failed = Object.keys(SALES_ERR).length;
+  if (failed) issues.push(`판매 탭 ${failed}개 실패`);
+  if (issues.length) return setStatus('part', `${hm} 업데이트 · ${issues.join(' · ')}`);
+  setStatus('ok', `${m.src} · ${hm} 업데이트`);
 }
 function setStatus(kind, text) { $('#status').className = 'status ' + kind; $('#status-text').textContent = text; }
 function showError(title, msg) {
@@ -593,9 +719,16 @@ function applyBodyco(rows, src) {
   B = analyzeBodyco(parseBodyco(rows)); B_err = null;
   sourceState.bodyco = { ok: true, src };
 }
+function applyDaily(rows, monthHint) {
+  const s = analyzeDaily(parseDailySales(rows, monthHint));
+  const year = (monthHint && monthHint.slice(0, 4)) || (A && A.year) || new Date().getFullYear();
+  const key = monthHint || `${year}-${String(s.monthNum).padStart(2, '0')}`;
+  s.key = key; SALES[key] = s; delete SALES_ERR[key];
+}
 
 async function loadAll() {
   sourceState.main = 'loading'; if (BODYCO_CSV_URL) sourceState.bodyco = 'loading';
+  if (SALES_TABS.length) sourceState.sales = 'loading';
   updateStatus();
   const jobs = [
     fetchCsv(CSV_URL).then(t => applyMain(toRows(t), '구글 시트')).catch(e => {
@@ -603,7 +736,10 @@ async function loadAll() {
   ];
   if (BODYCO_CSV_URL) jobs.push(fetchCsv(BODYCO_CSV_URL).then(t => applyBodyco(toRows(t), '구글 시트')).catch(e => {
     sourceState.bodyco = { ok: false }; B_err = e.message; }));
+  SALES_TABS.filter(t => t.url && t.url.startsWith('http')).forEach(t => jobs.push(
+    fetchCsv(t.url).then(x => applyDaily(toRows(x), t.month)).catch(e => { SALES_ERR[t.month] = e.message; })));
   await Promise.all(jobs);
+  sourceState.sales = { ok: true };
   updateStatus();
   if (A) renderAll();
 }
@@ -651,7 +787,7 @@ function deltaChip(cur, prev) {
 function renderAll() {
   $('#subtitle').textContent = `${A.year}년 · 구글 시트 실시간 연동`;
   renderView();
-  const ng = A.checks.filter(c => c.st === 'ng').length + (B ? B.checks.filter(c => c.st === 'ng').length : 0);
+  const ng = [...A.checks, ...(B ? B.checks : []), ...Object.values(SALES).flatMap(x => x.checks)].filter(c => c.st === 'ng').length + Object.keys(SALES_ERR).length;
   $('#footer').textContent = `데이터 출처: 구글 스프레드시트(웹에 게시 CSV) · ${AUTO_REFRESH_MINUTES}분마다 자동 새로고침 · 검증 ${ng ? ng + '건 확인 필요' : '모두 통과'}`;
 }
 function renderView() {
@@ -717,7 +853,10 @@ function renderOverview() {
   // 검증
   const li = x => `<li class="${x.st}"><span class="ic">${x.st === 'ok' ? '✓' : x.st === 'ng' ? '!' : 'i'}</span><span>${x.t}${x.s ? `<small>${x.s}</small>` : ''}</span></li>`;
   $('#checks').innerHTML = `<h4>월간 총 매출 시트</h4>` + A.checks.map(li).join('') +
-    `<h4>바디코 원가 정산 시트</h4>` + (B ? B.checks.map(li).join('') : li({ st: 'info', t: bodycoMissingText().title, s: bodycoMissingText().msg }));
+    `<h4>바디코 원가 정산 시트</h4>` + (B ? B.checks.map(li).join('') : li({ st: 'info', t: bodycoMissingText().title, s: bodycoMissingText().msg })) +
+    `<h4>월별 판매 탭</h4>` + (Object.keys(SALES).sort().map(k => SALES[k].checks.map(li).join('')).join('') +
+      Object.entries(SALES_ERR).map(([m, e]) => li({ st: 'ng', t: `${m} 판매 탭을 불러오지 못했어요`, s: e })).join('') ||
+      li({ st: 'info', t: '연결된 판매 탭이 없어요', s: 'index.html 설정의 SALES_TABS에 링크를 추가하세요.' }));
 }
 
 /* ───────── 크리에이터별 ───────── */
@@ -786,13 +925,20 @@ function renderCreator() {
 }
 
 /* ───────── 사업 탭 공통 (소셜박스·바디코) ───────── */
+// 최근 달 카드: 월간 시트에 아직 없는 달은 판매 탭(일일 집계)으로 보여줍니다
+function monthKpi(name) {
+  const m = A.byName[name] ? A.byName[name].months : [], last = A.lastIdx, lastV = m[last] || 0, prevV = last > 0 ? m[last - 1] : 0;
+  const S = SALES[`${A.year}-${String(last + 1).padStart(2, '0')}`], sb = S && S.byBiz[name];
+  if (lastV === 0 && sb) return kpi(`${last + 1}월 판매 (일일 집계${last === A.curMonth - 1 ? ' · 진행 중' : ''})`, shortWon(sb.sales), `반품·취소 ${shortWon(sb.refunds)} 차감 시 ${shortWon(sb.sales - sb.refunds)}`);
+  return kpi(`${last + 1}월 매출`, shortWon(lastV), lastV === 0 && last === A.curMonth - 1 ? '이번 달 아직 미입력' : deltaChip(lastV, prevV));
+}
 function bizKpis(name, colorVar) {
   const b = A.byName[name]; if (!b) return `<p class="note">"${name}" 줄을 시트에서 찾지 못했어요.</p>`;
   const m = b.months, cum = sumArr(m), last = A.lastIdx, lastV = m[last] || 0, prevV = last > 0 ? m[last - 1] : 0;
   const act = A.actualIdx.filter(i => i <= last), avg = act.length ? act.reduce((s, i) => s + m[i], 0) / act.length : 0;
   const best = act.reduce((x, i) => (m[i] > m[x] ? i : x), act[0] ?? 0);
   return kpi(`${name} 누적 매출`, shortWon(cum), `팀 전체의 ${(cum / A.totalCum * 100).toFixed(1)}%`, { hero: colorVar }) +
-    kpi(`${last + 1}월 매출`, shortWon(lastV), lastV === 0 && last === A.curMonth - 1 ? '이번 달 아직 미입력' : deltaChip(lastV, prevV)) +
+    monthKpi(name) +
     kpi('월 평균 매출', shortWon(avg), `1~${last + 1}월 기준`) +
     kpi('최고 매출 월', `${best + 1}월`, shortWon(m[best] || 0));
 }
@@ -808,9 +954,83 @@ function bizChart(id, name, colorVar) {
       scales: Object.assign(baseOptions().scales, { y2: { position: 'right', min: 0, max: 100, grid: { display: false }, border: { display: false }, ticks: { color: c.muted, callback: v => v + '%' } } }) }) });
 }
 
+/* 일일 판매 패널 (소셜박스·바디코 공통) */
+const marketPlugin = {
+  id: 'markets',
+  beforeDatasetsDraw(chart, args, opts) {
+    const ranges = opts && opts.ranges; if (!ranges || !ranges.length) return;
+    const { ctx, chartArea: a, scales: { x } } = chart;
+    const step = x.getPixelForValue(1) - x.getPixelForValue(0);
+    ctx.save();
+    ranges.forEach((r, i) => {
+      const x1 = x.getPixelForValue(r.from - 1) - step / 2, x2 = x.getPixelForValue(r.to - 1) + step / 2;
+      ctx.fillStyle = opts.fill; ctx.fillRect(x1, a.top, x2 - x1, a.bottom - a.top);
+      ctx.fillStyle = opts.text; ctx.font = `600 11px ${opts.font}`;
+      ctx.fillText(r.name, x1 + 4, a.top + 12 + (i % 3) * 14);
+    });
+    ctx.restore();
+  }
+};
+function renderDaily(panelId, biz, canvasId) {
+  const P = document.getElementById(panelId), q = s => P.querySelector(s);
+  const months = Object.keys(SALES).sort();
+  const sel = q('.dly-month');
+  if (!months.length) {
+    q('.dly-body').hidden = true; sel.hidden = true; q('.dly-missing').hidden = false;
+    const errs = Object.entries(SALES_ERR);
+    q('.dly-desc').textContent = '월별 판매 탭 (★2026. 10 판매 등)';
+    q('.dly-missing').textContent = errs.length
+      ? `판매 탭을 불러오지 못했어요. index.html 설정의 SALES_TABS 링크를 확인해 주세요. (${errs.map(([m, e]) => m + ': ' + e).join(' / ')})`
+      : 'index.html 설정의 SALES_TABS에 판매 탭 링크를 넣으면 일별 매출이 나타나요. 지금은 "CSV 직접 올리기"로 파일을 열어볼 수 있어요.';
+    return;
+  }
+  q('.dly-body').hidden = false; q('.dly-missing').hidden = true; sel.hidden = months.length < 2;
+  const key = dailyMonth[panelId] && SALES[dailyMonth[panelId]] ? dailyMonth[panelId] : months.at(-1);
+  dailyMonth[panelId] = key;
+  sel.innerHTML = months.map(m => `<option value="${m}">${Number(m.slice(5))}월</option>`).join(''); sel.value = key;
+  sel.onchange = () => { dailyMonth[panelId] = sel.value; renderDaily(panelId, biz, canvasId); };
+
+  const S = SALES[key], info = S.byBiz[biz] || { channels: [], sales: 0, refunds: 0 };
+  const chans = info.channels, c = C();
+  const isCur = Number(key.slice(0, 4)) === A.year && S.monthNum === A.curMonth;
+  q('.dly-title').textContent = `${S.monthNum}월 일일 판매`;
+  q('.dly-desc').textContent = `판매 탭 "${S.title}" · ${chans.join(', ') || '해당 채널 없음'}${isCur ? ` · ${S.lastDay}일까지 입력` : ''}`;
+  const sold = S.days.filter(d => !d.empty).map(d => ({ d, v: sumArr(chans.map(ch => d.values[ch])) }));
+  const best = sold.reduce((b, x) => (x.v > (b ? b.v : -Infinity) ? x : b), null);
+  const avg = sold.length ? info.sales / sold.length : 0;
+  q('.dly-mini').innerHTML = [
+    ['판매 합계', shortWon(info.sales), chans.length > 1 ? chans.map(ch => `${ch.replace('카페24_', '')} ${shortWon(S.chTotals[ch])}`).join(' · ') : `${sold.length}일 판매`],
+    ['반품·취소', shortWon(info.refunds), `${S.refunds.filter(r => r.biz === biz).length}건`],
+    ['순매출', shortWon(info.sales - info.refunds), '판매 − 반품·취소'],
+    ['일 평균 · 최고', shortWon(avg), best ? `최고 ${best.d.d}(${best.d.dow}) ${shortWon(best.v)}` : '']
+  ].map(([l, v, s]) => `<div><span>${l}</span><b>${v}</b><span class="note">${s}</span></div>`).join('');
+
+  const pal = biz === '소셜박스' ? [c.b1, alpha(c.b1, .55), alpha(c.b1, .3)] : [c.b2, c.total, c.com, c.plan];
+  const ranges = S.markets.filter(m => m.fromM === S.monthNum);
+  draw(canvasId, { type: 'bar',
+    data: { labels: S.days.map(d => `${d.day}일`), datasets: chans.map((ch, i) => ({ label: ch, data: S.days.map(d => (d.empty ? null : d.values[ch])), backgroundColor: pal[i % pal.length], maxBarThickness: 18, borderRadius: 3 })) },
+    options: baseOptions({
+      plugins: Object.assign(baseOptions().plugins, { markets: { ranges, fill: alpha(css('--goal'), .07), text: c.muted, font: css('--font') },
+        tooltip: { callbacks: { title: x => { const d = S.days[x[0].dataIndex]; return `${d.d} (${d.dow})`; }, label: x => `${x.dataset.label}: ${fullWon(x.raw ?? 0)}` } } }),
+      scales: { x: { stacked: true, grid: { display: false }, ticks: { color: c.muted, maxRotation: 0, autoSkip: true, autoSkipPadding: 6 } },
+        y: { stacked: true, grid: { color: c.line }, border: { display: false }, ticks: { color: c.muted, callback: axisWon } } } }),
+    plugins: [marketPlugin] });
+  q('.dly-note').textContent = ranges.length
+    ? `연한 빨간 구간은 마켓(공구) 진행 기간: ${ranges.map(r => `${r.name} ${r.from}~${r.to}일`).join(', ')}`
+    : '이 달에 등록된 마켓 진행 일정이 없어요.';
+
+  const refunds = S.refunds.filter(r => r.biz === biz);
+  q('.dly-refund').innerHTML = refunds.length
+    ? `<thead><tr><th>날짜</th><th>구분</th><th>금액</th><th style="text-align:left">상품</th></tr></thead><tbody>${refunds.map(r =>
+        `<tr><td>${r.d}</td><td>${r.kind}</td><td>${fullWon(r.amt)}</td><td style="text-align:left;white-space:normal;min-width:180px">${r.product}${r.note ? ' · ' + r.note : ''}</td></tr>`).join('')}</tbody>
+       <tfoot><tr><td>합계</td><td>${refunds.length}건</td><td>${fullWon(sumArr(refunds.map(r => r.amt)))}</td><td></td></tr></tfoot>`
+    : `<tbody><tr><td class="zero">이 달 반품·취소 기록이 없어요.</td></tr></tbody>`;
+}
+
 function renderSocialbox() {
   $('#sb-kpis').innerHTML = bizKpis('소셜박스', '--biz1');
   bizChart('c-sb', '소셜박스', '--biz1');
+  renderDaily('sb-daily', '소셜박스', 'c-sb-daily');
   const b = A.byName['소셜박스'];
   if (b) monthTable($('#t-sb'), b.rows.map((r, i) => [`${r.rawType}${b.rows.length > 1 ? ` (${i + 1}번째 줄)` : ''}`, r.months]), '소셜박스 합계', b.months);
 }
@@ -823,6 +1043,7 @@ function bodycoMissingText() {
 function renderBodyco() {
   const c = C();
   bizChart('c-bc', '바디코', '--biz2');
+  renderDaily('bc-daily', '바디코', 'c-bc-daily');
   if (!B) {
     $('#bc-kpis').innerHTML = bizKpis('바디코', '--biz2');
     const t = bodycoMissingText();
@@ -835,7 +1056,7 @@ function renderBodyco() {
   const lastP = B.periods.at(-1);
   $('#bc-kpis').innerHTML =
     kpi('바디코 누적 매출', shortWon(cum), b ? `팀 전체의 ${(cum / A.totalCum * 100).toFixed(1)}% · 자체몰` : '', { hero: '--biz2' }) +
-    kpi(`${A.lastIdx + 1}월 매출`, shortWon(b ? b.months[A.lastIdx] || 0 : 0), b ? ((b.months[A.lastIdx] || 0) === 0 ? '이번 달 아직 미입력' : deltaChip(b.months[A.lastIdx], b.months[A.lastIdx - 1])) : '') +
+    monthKpi('바디코') +
     kpi('정산 판매수량', `${num(B.totalQty)}건`, `${B.periods[0].label}~${lastP.label} · 증정 ${num(B.totalGift)}건 포함`) +
     kpi('원가 정산 금액', shortWon(B.totalAmt), `최근 ${lastP.label} ${shortWon(lastP.amt)}`);
 
@@ -889,7 +1110,8 @@ $('#file-input').addEventListener('change', async e => {
       const kind = detectSheet(rows);
       if (kind === 'main') applyMain(rows, '올린 파일');
       else if (kind === 'bodyco') applyBodyco(rows, '올린 파일');
-      else throw new Error(`"${f.name}"이 어떤 시트인지 알 수 없어요. 월간 총 매출 또는 바디코 원가 정산 CSV를 올려 주세요.`);
+      else if (kind === 'daily') applyDaily(rows, null);
+      else throw new Error(`"${f.name}"이 어떤 시트인지 알 수 없어요. 월간 총 매출, 월별 판매, 바디코 원가 정산 CSV를 올려 주세요.`);
     } catch (err) { showError('파일을 읽지 못했어요', err.message); }
   }
   e.target.value = '';
