@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>콘텐츠 사업팀 매출 대시보드</title>
+<meta name="description" content="콘텐츠 사업팀 월간 매출 대시보드">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ───────────── 색상·글꼴 (여기만 바꾸면 전체 디자인이 바뀝니다) ───────────── */
+:root{
+  --bg:#F4F5F8; --surface:#FFFFFF; --sunk:#EEF0F4; --line:#E2E5EB;
+  --fg:#151821; --muted:#626A7A; --faint:#9AA1AE;
+  --total:#3B5BDB;     /* 팀 전체 */
+  --plan:#7048E8;      /* 기획파트 */
+  --commerce:#0CA678;  /* 커머스파트 */
+  --biz1:#F76707;      /* 소셜박스 */
+  --biz2:#1098AD;      /* 바디코 */
+  --goal:#E03131;      /* 목표선 */
+  --good:#2B8A3E; --good-bg:#E6F4EA; --warn:#B35C00; --warn-bg:#FFF1DE; --bad:#C92A2A; --bad-bg:#FDE8E8;
+  --font:"Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0E1016; --surface:#171A23; --sunk:#1F2330; --line:#2A2F3D;
+  --fg:#ECEEF3; --muted:#A0A7B6; --faint:#6B7284;
+  --total:#7C95FF; --plan:#A98BFF; --commerce:#3DD9A3; --biz1:#FF9A4D; --biz2:#4FD1E4; --goal:#FF6B6B;
+  --good:#69DB7C; --good-bg:#16301F; --warn:#FFB65C; --warn-bg:#3A2A12; --bad:#FF8787; --bad-bg:#3B1A1D;
+  color-scheme:dark}}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+
+/* 상단 바 */
+header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding-block:14px}
+.title small{display:block;color:var(--muted);font-size:12.5px;font-weight:500}
+.title h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);padding:6px 12px;background:var(--surface);border:1px solid var(--line);border-radius:999px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.status.ok .dot{background:var(--good)} .status.err .dot{background:var(--bad)} .status.load .dot{background:var(--warn);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.btn{font:inherit;font-size:13px;font-weight:600;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
+.btn:hover{border-color:var(--faint)}
+.btn:focus-visible,select:focus-visible,label.btn:focus-within{outline:2px solid var(--total);outline-offset:2px}
+.btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+main{padding-block:24px 56px;display:flex;flex-direction:column;gap:20px}
+.error-box{background:var(--bad-bg);color:var(--fg);border:1px solid color-mix(in srgb,var(--bad) 40%,transparent);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.error-box h2{margin:0;font-size:16px;color:var(--bad)}
+.error-box p{margin:0;max-width:70ch}
+.error-box ul{margin:0;padding-left:20px;color:var(--muted);font-size:14px}
+
+/* 카드 */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.kpi.hero{background:var(--total);border-color:var(--total);color:#fff}
+.kpi.hero .lbl,.kpi.hero .sub{color:rgba(255,255,255,.82)}
+.kpi .lbl{font-size:13px;font-weight:600;color:var(--muted)}
+.kpi .val{font-size:26px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.2;word-break:keep-all;overflow-wrap:anywhere}
+.kpi .sub{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;margin-right:4px}
+.chip.up{background:var(--good-bg);color:var(--good)} .chip.down{background:var(--bad-bg);color:var(--bad)} .chip.neu{background:var(--sunk);color:var(--muted)}
+.goalbar{height:6px;border-radius:3px;background:rgba(255,255,255,.25);overflow:hidden;margin-top:4px}
+.kpi:not(.hero) .goalbar{background:var(--sunk)}
+.goalbar span{display:block;height:100%;background:currentColor;border-radius:3px}
+
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel.wide{grid-column:1 / -1}
+.phead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:8px 12px}
+.phead h2{margin:0;font-size:17px;font-weight:700;letter-spacing:-.01em}
+.phead p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.chart-box{position:relative;height:300px;min-width:0}
+.chart-box.tall{height:520px}
+.mini{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.mini div{background:var(--sunk);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.mini span{font-size:12.5px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:6px}
+.mini b{font-size:18px;font-weight:800;word-break:keep-all;font-variant-numeric:tabular-nums;letter-spacing:-.02em;overflow-wrap:anywhere}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
+.note{font-size:12.5px;color:var(--faint)}
+select{font:inherit;font-size:14px;color:var(--fg);background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:7px 12px}
+.toggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer}
+
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12px;color:var(--muted);font-weight:600}
+td.zero{color:var(--faint)}
+tfoot td{font-weight:700;border-bottom:0}
+
+/* 검증 */
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.checks li{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.checks .ic{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800}
+.checks .ok .ic{background:var(--good-bg);color:var(--good)} .checks .ng .ic{background:var(--bad-bg);color:var(--bad)} .checks .info .ic{background:var(--warn-bg);color:var(--warn)}
+.checks small{display:block;color:var(--muted);font-size:12.5px}
+
+footer{color:var(--faint);font-size:12.5px;padding-block:0 40px}
+[hidden]{display:none!important}
+
+@media (max-width:960px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.kpi .val{font-size:20px}.chart-box{height:260px}.title h1{font-size:18px}.panel{padding:16px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap top">
+    <div class="title">
+      <small id="subtitle">구글 시트 실시간 연동</small>
+      <h1>콘텐츠 사업팀 매출 대시보드</h1>
+    </div>
+    <div class="actions">
+      <span class="status load" id="status"><span class="dot"></span><span id="status-text">데이터 불러오는 중…</span></span>
+      <button class="btn" id="refresh" type="button">새로고침</button>
+      <label class="btn" for="file-input">CSV 직접 올리기</label>
+      <input type="file" id="file-input" accept=".csv,text/csv" hidden>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="error-box" id="error-box" hidden>
+    <h2 id="error-title">데이터를 불러오지 못했어요</h2>
+    <p id="error-msg"></p>
+    <ul>
+      <li>구글 시트에서 <b>파일 → 공유 → 웹에 게시</b>가 켜져 있고 형식이 <b>CSV</b>인지 확인해 주세요.</li>
+      <li>잠시 후 <b>새로고침</b>을 눌러 보세요.</li>
+      <li>급하면 시트에서 CSV를 내려받아 오른쪽 위 <b>CSV 직접 올리기</b>로 열 수 있어요. (임시 데이터는 사용하지 않습니다)</li>
+    </ul>
+  </div>
+
+  <div id="dashboard" hidden>
+    <!-- 핵심 지표 -->
+    <section class="kpis" id="kpis" aria-label="핵심 지표"></section>
+
+    <div class="grid" style="margin-top:20px">
+      <!-- 월별 추이 -->
+      <section class="panel wide">
+        <div class="phead">
+          <div><h2>월별 매출 추이</h2><p id="trend-desc">월 매출(막대)과 누적 매출(선), 월 목표선</p></div>
+        </div>
+        <div class="chart-box"><canvas id="c-trend" aria-label="월별 매출과 누적 매출 차트" role="img"></canvas></div>
+        <p class="note" id="trend-note"></p>
+      </section>
+
+      <!-- 파트 비교 -->
+      <section class="panel">
+        <div class="phead"><div><h2>기획파트 vs 커머스파트</h2><p id="part-desc"></p></div></div>
+        <div class="mini" id="part-mini"></div>
+        <div class="chart-box"><canvas id="c-part" role="img" aria-label="파트별 월 매출 비교"></canvas></div>
+        <p class="note" id="part-note"></p>
+      </section>
+
+      <!-- 사업 비교 -->
+      <section class="panel">
+        <div class="phead"><div><h2>사업별 매출 비교</h2><p>소셜박스 · 바디코 월별 매출</p></div></div>
+        <div class="mini" id="biz-mini"></div>
+        <div class="chart-box"><canvas id="c-biz" role="img" aria-label="사업별 월 매출 비교"></canvas></div>
+      </section>
+
+      <!-- 크리에이터 순위 -->
+      <section class="panel">
+        <div class="phead"><div><h2>크리에이터별 매출</h2><p>연간 누적 순위 · 막대를 누르면 아래 상세가 바뀝니다</p></div></div>
+        <div class="chart-box tall" id="rank-box"><canvas id="c-rank" role="img" aria-label="크리에이터별 누적 매출 순위"></canvas></div>
+      </section>
+
+      <!-- 콘텐츠 유형 -->
+      <section class="panel">
+        <div class="phead">
+          <div><h2>콘텐츠 유형별 매출</h2><p>매출 유형별 연간 합계</p></div>
+          <label class="toggle"><input type="checkbox" id="inc-biz"> 사업(소셜박스·바디코) 포함</label>
+        </div>
+        <div class="chart-box"><canvas id="c-type" role="img" aria-label="콘텐츠 유형별 매출"></canvas></div>
+        <div class="tbl"><table id="t-type"></table></div>
+      </section>
+
+      <!-- 크리에이터 상세 -->
+      <section class="panel wide">
+        <div class="phead">
+          <div><h2>크리에이터 상세</h2><p>월별 · 유형별 매출</p></div>
+          <select id="creator-select" aria-label="크리에이터 선택"></select>
+        </div>
+        <div class="chart-box"><canvas id="c-creator" role="img" aria-label="선택한 크리에이터의 월별 매출"></canvas></div>
+        <div class="tbl"><table id="t-creator"></table></div>
+      </section>
+
+      <!-- 검증 -->
+      <section class="panel wide">
+        <div class="phead"><div><h2>데이터 검증</h2><p>불러올 때마다 시트의 합계와 대시보드 계산을 자동으로 대조합니다</p></div></div>
+        <ul class="checks" id="checks"></ul>
+      </section>
+    </div>
+  </div>
+</main>
+<footer class="wrap" id="footer">데이터 출처: 구글 스프레드시트 (웹에 게시 CSV)</footer>
+
+<script>
+/* ==================================================================
+   ① 설정 — 시트 주소가 바뀌면 여기만 고치세요
+   ================================================================== */
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ74jUbjtDP8KKrBNWqWD5tKwqFmTojI1TI0nAa4atkTwUQW91LncG4hspoE2o2hfZRz7TR4I-NXRSr/pub?output=csv';
+const BUSINESS_NAMES = ['소셜박스', '바디코'];   // 크리에이터가 아닌 '사업'으로 볼 이름
+const AUTO_REFRESH_MINUTES = 5;                  // 자동 새로고침 간격(분)
+const DEFAULT_GOAL = 250000000;                  // 시트에서 목표를 못 찾을 때 쓸 월 목표(원)
+
+/* ==================================================================
+   ② 파서 — 병합 셀·빈 셀·여러 줄 헤더를 처리해 숫자 데이터로 바꿉니다
+   ================================================================== */
+// === PARSER START ===
+const MONTH_COUNT = 12;
+
+// "₩1,234", "-₩22,688,068", " ", "" → 숫자 또는 null(빈 칸)
+function parseWon(v) {
+  if (v === undefined || v === null) return null;
+  let s = String(v).replace(/[\s₩원,]/g, '');
+  if (s === '' || s === '-') return null;
+  let neg = false;
+  if (/^\(.*\)$/.test(s)) { neg = true; s = s.slice(1, -1); }
+  if (s.startsWith('-')) { neg = !neg; s = s.slice(1); }
+  const n = Number(s);
+  if (!Number.isFinite(n)) return null;
+  return neg ? -n : n;
+}
+
+// "기타 수익(2차 활용,마켓)" 같은 변형을 하나로 묶습니다
+function normalizeType(t) {
+  const s = (t || '').trim();
+  if (s.startsWith('기타 수익') || s.startsWith('기타수익')) return '기타 수익(2차 활용)';
+  return s;
+}
+
+const sumArr = a => a.reduce((s, v) => s + (v || 0), 0);
+
+function parseSheet(rows) {
+  // 모든 칸 앞뒤 공백 제거, 열 개수 맞추기
+  const width = Math.max(...rows.map(r => r.length));
+  const grid = rows.map(r => Array.from({ length: width }, (_, i) => (r[i] ?? '').toString().trim()));
+
+  // 월 목표: "2.5억" 같은 문구 찾기
+  let goal = DEFAULT_GOAL;
+  for (const r of grid) for (const c of r) {
+    const m = c.includes('목표') && c.match(/([\d.]+)\s*억/);
+    if (m) { goal = Math.round(parseFloat(m[1]) * 1e8); break; }
+  }
+
+  // '구분' 칸이 있는 줄 = 각 표의 헤더
+  const headers = [];
+  grid.forEach((r, i) => {
+    const typeCol = r.indexOf('구분');
+    if (typeCol < 0) return;
+    const labelCol = r.slice(0, typeCol).findLastIndex(c => c !== '');
+    const raw = labelCol >= 0 ? r[labelCol] : '';
+    const lines = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    const monthCols = [];
+    for (let m = 1; m <= MONTH_COUNT; m++) monthCols.push(r.indexOf(m + '월'));
+    headers.push({ row: i, typeCol, labelCol: labelCol >= 0 ? labelCol : typeCol - 1,
+      title: lines[0] || '', note: lines.slice(1).join(' ').replace(/^\*/, ''),
+      cumCol: r.indexOf('누적'), monthCols });
+  });
+  if (!headers.length) throw new Error('시트에서 "구분" 헤더를 찾지 못했어요. 시트 구조가 바뀌었는지 확인해 주세요.');
+
+  const readMonths = r => headerMonths.map(c => (c >= 0 ? parseWon(r[c]) : null));
+  let headerMonths = [];
+
+  const result = { goal, year: null, total: null, plan: null, commerce: null, entries: [], declaredCum: {} };
+
+  headers.forEach((h, k) => {
+    headerMonths = h.monthCols;
+    const end = k + 1 < headers.length ? headers[k + 1].row : grid.length;
+    const body = grid.slice(h.row + 1, end);
+    const isCreator = h.title.includes('크리에이터');
+
+    if (!isCreator) {
+      // 요약 표: 숫자가 있는 첫 줄이 데이터 줄
+      const r = body.find(r => readMonths(r).some(v => v !== null) || parseWon(r[h.cumCol]) !== null);
+      if (!r) return;
+      const sec = { title: h.title, note: h.note, year: r[h.typeCol] || null,
+        cum: parseWon(r[h.cumCol]), months: readMonths(r) };
+      if (sec.year && /^\d{4}$/.test(sec.year)) result.year = result.year || Number(sec.year);
+      if (h.title.includes('전체')) result.total = sec;
+      else if (h.title.includes('기획')) result.plan = sec;
+      else if (h.title.includes('커머스')) result.commerce = sec;
+      return;
+    }
+
+    // 크리에이터 표: 이름·유형 칸이 병합되어 비어 있으면 위 값을 이어받음
+    let name = null, type = null;
+    for (const r of body) {
+      const nm = r[h.labelCol], tp = r[h.typeCol];
+      const months = readMonths(r);
+      const cum = parseWon(r[h.cumCol]);
+      if (!nm && !tp && months.every(v => v === null) && cum === null) continue; // 완전히 빈 줄
+      if (nm) { name = nm; type = null; if (cum !== null) result.declaredCum[name] = cum; }
+      if (tp) type = tp;
+      if (!name) continue;
+      result.entries.push({ name, rawType: type || '(유형 없음)', type: normalizeType(type || '(유형 없음)'),
+        isBusiness: BUSINESS_NAMES.includes(name), months: months.map(v => v || 0) });
+    }
+  });
+
+  if (!result.total) throw new Error('"월간 실적 전체" 표를 찾지 못했어요.');
+  return result;
+}
+
+// 집계 + 검증
+function analyze(d, today = new Date()) {
+  const zeros = () => Array(MONTH_COUNT).fill(0);
+  const addTo = (a, b) => a.forEach((_, i) => (a[i] += b[i]));
+  const names = [...new Set(d.entries.map(e => e.name))];
+  const byName = {}, byType = {}, byTypeCreatorsOnly = {};
+  for (const e of d.entries) {
+    (byName[e.name] ||= { name: e.name, isBusiness: e.isBusiness, months: zeros(), types: {} });
+    addTo(byName[e.name].months, e.months);
+    addTo((byName[e.name].types[e.type] ||= zeros()), e.months);
+    addTo((byType[e.type] ||= zeros()), e.months);
+    if (!e.isBusiness) addTo((byTypeCreatorsOnly[e.type] ||= zeros()), e.months);
+  }
+  const entriesMonthly = zeros();
+  d.entries.forEach(e => addTo(entriesMonthly, e.months));
+
+  // 오늘 기준: 이번 달 이후는 '예정'
+  const year = d.year || today.getFullYear();
+  const curMonth = year < today.getFullYear() ? 12 : year > today.getFullYear() ? 0 : today.getMonth() + 1;
+  const total = d.total.months.map(v => v ?? 0);
+  const totalCum = sumArr(total);
+  const actualIdx = total.map((v, i) => i).filter(i => i < curMonth);
+  const lastIdx = [...actualIdx].reverse().find(i => total[i] !== 0) ?? -1;
+  const forecast = total.map((v, i) => (i >= curMonth && v ? v : 0));
+  const running = []; total.reduce((s, v, i) => (running[i] = s + v), 0);
+
+  // 검증 항목
+  const checks = [];
+  const eq = (a, b) => Math.round(a) === Math.round(b);
+  const won = n => '₩' + Math.round(n).toLocaleString('ko-KR');
+  for (const [key, label] of [['total', '팀 전체'], ['plan', '기획파트'], ['commerce', '커머스파트']]) {
+    const s = d[key]; if (!s) { checks.push({ st: 'ng', t: `${label} 표를 찾지 못했어요` }); continue; }
+    const calc = sumArr(s.months);
+    checks.push({ st: s.cum === null ? 'info' : eq(calc, s.cum) ? 'ok' : 'ng',
+      t: `${label}: 월별 합계 ${won(calc)} ${s.cum === null ? '(시트에 누적 값 없음)' : eq(calc, s.cum) ? '= 시트 누적' : '≠ 시트 누적 ' + won(s.cum)}` });
+  }
+  const bad = names.filter(n => d.declaredCum[n] !== undefined && !eq(sumArr(byName[n].months), d.declaredCum[n]));
+  checks.push({ st: bad.length ? 'ng' : 'ok',
+    t: bad.length ? `크리에이터 누적 불일치 ${bad.length}건: ${bad.join(', ')}` : `크리에이터·사업 ${names.length}개 모두 월별 합계 = 시트 누적`,
+    s: bad.map(n => `${n}: 계산 ${won(sumArr(byName[n].months))} / 시트 ${won(d.declaredCum[n])}`).join(' · ') });
+  const diffM = total.map((v, i) => i).filter(i => !eq(total[i], entriesMonthly[i]));
+  checks.push({ st: diffM.length ? 'ng' : 'ok',
+    t: diffM.length ? `크리에이터별 합계와 팀 전체가 다른 달: ${diffM.map(i => i + 1 + '월').join(', ')}` : '크리에이터별 매출을 모두 더한 값 = 팀 전체 월 매출 (12개월 모두 일치)',
+    s: diffM.map(i => `${i + 1}월 차이 ${won(entriesMonthly[i] - total[i])}`).join(' · ') });
+  if (d.plan && d.commerce) {
+    const pc = sumArr(d.plan.months) + sumArr(d.commerce.months);
+    checks.push({ st: 'info', t: `참고: 기획+커머스 합계 ${won(pc)}는 팀 전체와 기준이 달라요`,
+      s: `기획은 "${d.plan.note || '별도 기준'}", 커머스는 "${d.commerce.note || '별도 기준'}" 기준이라 팀 전체 매출(${won(totalCum)})과 직접 더해 비교하지 않습니다.` });
+  }
+
+  return { year, curMonth, total, totalCum, running, forecast, lastIdx, actualIdx,
+    byName, byType, byTypeCreatorsOnly, names, checks, goal: d.goal,
+    plan: d.plan, commerce: d.commerce, declaredTotalCum: d.total.cum };
+}
+// === PARSER END ===
+
+/* ==================================================================
+   ③ 화면 그리기
+   ================================================================== */
+if (typeof document !== 'undefined') {
+const $ = s => document.querySelector(s);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const MONTH_LABELS = Array.from({ length: MONTH_COUNT }, (_, i) => i + 1 + '월');
+const fullWon = n => (n < 0 ? '-' : '') + '₩' + Math.abs(Math.round(n)).toLocaleString('ko-KR');
+// 1,034,270,787 → "10억 3,427만원"
+function shortWon(n) {
+  const neg = n < 0; n = Math.abs(Math.round(n));
+  const eok = Math.floor(n / 1e8), man = Math.round((n % 1e8) / 1e4);
+  let s = eok ? `${eok}억${man ? ' ' + man.toLocaleString('ko-KR') + '만' : ''}` : `${man.toLocaleString('ko-KR')}만`;
+  if (!eok && !man) s = n.toLocaleString('ko-KR');
+  return (neg ? '-' : '') + s + '원';
+}
+const axisWon = v => (Math.abs(v) >= 1e8 ? (v / 1e8).toFixed(1).replace(/\.0$/, '') + '억' : Math.round(v / 1e4).toLocaleString('ko-KR') + '만');
+
+let lastRows = null, charts = {}, A = null, selected = null;
+
+function setStatus(kind, text) {
+  $('#status').className = 'status ' + kind;
+  $('#status-text').textContent = text;
+}
+function showError(title, msg) {
+  $('#error-title').textContent = title;
+  $('#error-msg').textContent = msg;
+  $('#error-box').hidden = false;
+  setStatus('err', '불러오기 실패');
+}
+
+async function loadFromUrl() {
+  setStatus('load', '데이터 불러오는 중…');
+  let res;
+  try {
+    // t= 값은 브라우저 캐시를 피하려는 용도입니다
+    res = await fetch(CSV_URL + (CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
+  } catch (e) {
+    return showError('시트에 연결하지 못했어요',
+      '인터넷 연결이 끊겼거나, 브라우저가 다른 사이트의 데이터 읽기를 막았어요(CORS). 웹에 게시 링크(…/pub?output=csv)가 맞는지 확인해 주세요. 상세: ' + e.message);
+  }
+  if (!res.ok) return showError(`시트가 응답하지 않아요 (오류 ${res.status})`,
+    res.status === 404 ? '게시가 중지되었거나 링크가 바뀌었어요. 시트에서 웹에 게시를 다시 확인해 주세요.' : '잠시 후 다시 시도해 주세요.');
+  // 구글은 UTF-8로 보내지만, 혹시 모를 경우를 위해 직접 UTF-8로 해석합니다
+  const text = new TextDecoder('utf-8').decode(await res.arrayBuffer());
+  handleText(text, '구글 시트');
+}
+
+function handleText(text, source) {
+  text = text.replace(/^﻿/, '');
+  if (/^\s*</.test(text)) return showError('CSV가 아닌 웹페이지를 받았어요',
+    '시트가 로그인 화면이나 일반 웹페이지로 응답했어요. 웹에 게시 형식을 "쉼표로 구분된 값(.csv)"으로 골랐는지 확인해 주세요.');
+  const parsed = Papa.parse(text, { skipEmptyLines: false });
+  if (parsed.errors.length && !parsed.data.length) return showError('CSV를 읽지 못했어요', parsed.errors[0].message);
+  try {
+    const data = parseSheet(parsed.data);
+    A = analyze(data);
+    lastRows = parsed.data;
+  } catch (e) {
+    return showError('시트 구조를 해석하지 못했어요', e.message);
+  }
+  $('#error-box').hidden = true;
+  $('#dashboard').hidden = false;
+  const t = new Date();
+  setStatus('ok', `${source} · ${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')} 업데이트`);
+  render();
+}
+
+/* 공통 차트 설정 */
+function baseOptions(extra = {}) {
+  const grid = css('--line'), tick = css('--muted');
+  return Object.assign({
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'bottom', labels: { color: tick, usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 10, padding: 14, font: { family: css('--font'), size: 12 } } },
+      tooltip: { callbacks: { label: c => `${c.dataset.label}: ${fullWon(c.raw ?? 0)}` }, titleFont: { family: css('--font') }, bodyFont: { family: css('--font') } }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: tick, font: { family: css('--font') } } },
+      y: { grid: { color: grid }, border: { display: false }, ticks: { color: tick, callback: axisWon, font: { family: css('--font') } } }
+    }
+  }, extra);
+}
+function draw(id, config) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), config);
+}
+// '#3B5BDB' + 0.4 → 'rgba(59,91,219,0.4)' (차트 캔버스용 반투명 색)
+function alpha(hex, a) {
+  const h = hex.replace('#', '');
+  const f = h.length === 3 ? h.split('').map(x => x + x).join('') : h;
+  const n = parseInt(f, 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
+function render() {
+  const { year, curMonth, total, totalCum, running, forecast, lastIdx, goal } = A;
+  $('#subtitle').textContent = `${year}년 · 구글 시트 실시간 연동`;
+
+  /* 1) 핵심 지표 카드 */
+  const last = lastIdx >= 0 ? total[lastIdx] : 0, prev = lastIdx > 0 ? total[lastIdx - 1] : 0;
+  const diff = prev ? (last - prev) / Math.abs(prev) : 0;
+  const actualMonths = A.actualIdx.filter(i => i <= lastIdx);
+  const avg = actualMonths.length ? actualMonths.reduce((s, i) => s + total[i], 0) / actualMonths.length : 0;
+  const hit = actualMonths.filter(i => total[i] >= goal).length;
+  const best = actualMonths.reduce((b, i) => (total[i] > total[b] ? i : b), actualMonths[0] ?? 0);
+  const fc = forecast.reduce((s, v) => s + v, 0);
+  const inProgress = lastIdx === curMonth - 1;
+  $('#kpis').innerHTML = `
+    <div class="kpi hero"><span class="lbl">${year}년 누적 매출</span><span class="val">${shortWon(totalCum)}</span>
+      <span class="sub">${fullWon(totalCum)}${fc ? ` · 예정 ${shortWon(fc)} 포함` : ''}</span></div>
+    <div class="kpi"><span class="lbl">${lastIdx + 1}월 매출${inProgress ? ' (진행 중)' : ''}</span><span class="val">${shortWon(last)}</span>
+      <span class="sub">${prev ? `<span class="chip ${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '▲' : '▼'} ${Math.abs(diff * 100).toFixed(1)}%</span>전월 ${shortWon(prev)}` : '전월 데이터 없음'}</span></div>
+    <div class="kpi"><span class="lbl">월 평균 매출</span><span class="val">${shortWon(avg)}</span>
+      <span class="sub">1~${lastIdx + 1}월 기준 · 최고 ${best + 1}월 ${shortWon(total[best] || 0)}</span></div>
+    <div class="kpi" style="color:var(--goal)"><span class="lbl">월 목표 ${shortWon(goal)} 대비</span><span class="val" style="color:var(--fg)">${Math.round(avg / goal * 100)}%</span>
+      <div class="goalbar"><span style="width:${Math.min(100, avg / goal * 100)}%"></span></div>
+      <span class="sub">목표 달성한 달 ${hit} / ${actualMonths.length}개월</span></div>`;
+
+  /* 2) 월별 추이 */
+  const C = { total: css('--total'), goal: css('--goal'), plan: css('--plan'), com: css('--commerce'), b1: css('--biz1'), b2: css('--biz2'), muted: css('--muted') };
+  const actualData = total.map((v, i) => (i < curMonth ? v : null));
+  const forecastData = total.map((v, i) => (i >= curMonth && v ? v : null));
+  draw('c-trend', {
+    data: { labels: MONTH_LABELS, datasets: [
+      { type: 'bar', label: '월 매출', data: actualData, backgroundColor: C.total, borderRadius: 6, maxBarThickness: 38, yAxisID: 'y', order: 2 },
+      { type: 'bar', label: '예정 매출', data: forecastData, backgroundColor: alpha(C.total, .3), borderColor: C.total, borderWidth: 1.5, borderDash: [4, 3], borderRadius: 6, maxBarThickness: 38, yAxisID: 'y', order: 2 },
+      { type: 'line', label: '누적 매출', data: running, borderColor: C.muted, backgroundColor: C.muted, borderWidth: 2, pointRadius: 3, tension: .3, yAxisID: 'y2', order: 1 },
+      { type: 'line', label: '월 목표', data: MONTH_LABELS.map(() => goal), borderColor: C.goal, borderWidth: 1.5, borderDash: [6, 5], pointRadius: 0, yAxisID: 'y', order: 0 }
+    ] },
+    options: baseOptions({ scales: Object.assign(baseOptions().scales, {
+      y2: { position: 'right', grid: { display: false }, border: { display: false }, ticks: { color: C.muted, callback: axisWon } } }) })
+  });
+  $('#trend-note').textContent = `왼쪽 축: 월 매출 · 오른쪽 축: 누적 매출${fc ? ` · 점선 막대는 오늘 이후 달에 입력된 예정 매출` : ''}`;
+
+  /* 3) 파트 비교 */
+  const pm = A.plan ? A.plan.months : [], cm = A.commerce ? A.commerce.months : [];
+  const filled = a => a.reduce((n, v, i) => (v !== null ? i : n), -1);
+  const lastPart = Math.max(filled(pm), filled(cm));
+  $('#part-desc').textContent = `월별 매출 · 1~${lastPart + 1}월 입력분`;
+  $('#part-mini').innerHTML = [[A.plan, '--plan'], [A.commerce, '--commerce']].map(([s, c]) => s ?
+    `<div><span><i class="sw" style="background:var(${c})"></i>${s.title} 누적</span><b>${shortWon(sumArr(s.months))}</b><span class="note" style="font-weight:400">${s.note}</span></div>` : '').join('');
+  draw('c-part', { type: 'bar',
+    data: { labels: MONTH_LABELS.slice(0, lastPart + 1), datasets: [
+      { label: A.plan?.title || '기획파트', data: pm.slice(0, lastPart + 1), backgroundColor: C.plan, borderRadius: 5, maxBarThickness: 22 },
+      { label: A.commerce?.title || '커머스파트', data: cm.slice(0, lastPart + 1), backgroundColor: C.com, borderRadius: 5, maxBarThickness: 22 } ] },
+    options: baseOptions() });
+  const missing = MONTH_LABELS.filter((_, i) => i < curMonth && (pm[i] === null || cm[i] === null) && i > lastPart);
+  $('#part-note').textContent = `두 파트는 수수료·비용을 뺀 기준이라 더해도 팀 전체 매출과 같지 않아요.${missing.length ? ` ${missing.join(', ')}은 아직 미입력입니다.` : ''}`;
+
+  /* 4) 사업 비교 */
+  const biz = BUSINESS_NAMES.filter(n => A.byName[n]);
+  const bizColors = [C.b1, C.b2];
+  $('#biz-mini').innerHTML = biz.map((n, i) => `<div><span><i class="sw" style="background:${bizColors[i % 2]}"></i>${n} 누적</span><b>${shortWon(sumArr(A.byName[n].months))}</b><span class="note" style="font-weight:400">${Object.keys(A.byName[n].types).join(' · ')}</span></div>`).join('');
+  draw('c-biz', { type: 'line',
+    data: { labels: MONTH_LABELS.slice(0, Math.max(curMonth, 1)), datasets: biz.map((n, i) => ({
+      label: n, data: A.byName[n].months.slice(0, Math.max(curMonth, 1)), borderColor: bizColors[i % 2], backgroundColor: alpha(bizColors[i % 2], .12),
+      fill: true, tension: .3, borderWidth: 2.5, pointRadius: 3 })) },
+    options: baseOptions() });
+
+  /* 5) 크리에이터 순위 */
+  const creators = A.names.filter(n => !A.byName[n].isBusiness)
+    .map(n => ({ n, v: sumArr(A.byName[n].months) })).sort((a, b) => b.v - a.v);
+  $('#rank-box').style.height = Math.max(300, creators.length * 26 + 40) + 'px';
+  draw('c-rank', { type: 'bar',
+    data: { labels: creators.map(c => c.n), datasets: [{ label: '누적 매출', data: creators.map(c => c.v),
+      backgroundColor: creators.map(c => (c.n === selected ? C.total : alpha(C.total, .45))), borderRadius: 4, barThickness: 16 }] },
+    options: baseOptions({ indexAxis: 'y', interaction: { mode: 'nearest', intersect: true, axis: 'y' },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fullWon(c.raw) } } },
+      scales: { x: { grid: { color: css('--line') }, border: { display: false }, ticks: { color: css('--muted'), callback: axisWon } },
+                y: { grid: { display: false }, ticks: { color: css('--fg'), font: { family: css('--font'), size: 12.5 } } } },
+      onClick: (e, els) => { if (els.length) { selectCreator(creators[els[0].index].n); } } }) });
+
+  /* 6) 콘텐츠 유형 */
+  renderTypes();
+
+  /* 7) 크리에이터 상세 */
+  const sel = $('#creator-select');
+  const allNames = [...creators.map(c => c.n), ...biz];
+  sel.innerHTML = allNames.map(n => `<option value="${n}">${n}${A.byName[n].isBusiness ? ' (사업)' : ''}</option>`).join('');
+  if (!selected || !A.byName[selected]) selected = creators[0]?.n;
+  sel.value = selected;
+  renderCreator();
+
+  /* 8) 검증 */
+  $('#checks').innerHTML = A.checks.map(c => `<li class="${c.st}"><span class="ic">${c.st === 'ok' ? '✓' : c.st === 'ng' ? '!' : 'i'}</span><span>${c.t}${c.s ? `<small>${c.s}</small>` : ''}</span></li>`).join('');
+  const ng = A.checks.filter(c => c.st === 'ng').length;
+  $('#footer').textContent = `데이터 출처: 구글 스프레드시트(웹에 게시 CSV) · ${AUTO_REFRESH_MINUTES}분마다 자동 새로고침 · 검증 ${ng ? ng + '건 확인 필요' : '모두 통과'}`;
+}
+
+function renderTypes() {
+  const inc = $('#inc-biz').checked;
+  const src = inc ? A.byType : A.byTypeCreatorsOnly;
+  const rows = Object.entries(src).map(([t, m]) => ({ t, v: sumArr(m) })).filter(r => r.v !== 0).sort((a, b) => b.v - a.v);
+  const all = rows.reduce((s, r) => s + r.v, 0);
+  const palette = ['--total', '--plan', '--commerce', '--biz1', '--biz2', '--goal', '--muted'].map(css);
+  draw('c-type', { type: 'bar',
+    data: { labels: rows.map(r => r.t), datasets: [{ label: '매출', data: rows.map(r => r.v), backgroundColor: rows.map((_, i) => palette[i % palette.length]), borderRadius: 6, maxBarThickness: 46 }] },
+    options: baseOptions({ plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${fullWon(c.raw)} (${(c.raw / all * 100).toFixed(1)}%)` } } } }) });
+  $('#t-type').innerHTML = `<thead><tr><th>유형</th><th>매출</th><th>비중</th></tr></thead><tbody>${rows.map(r => `<tr><td>${r.t}</td><td>${fullWon(r.v)}</td><td>${(r.v / all * 100).toFixed(1)}%</td></tr>`).join('')}</tbody><tfoot><tr><td>합계</td><td>${fullWon(all)}</td><td>100%</td></tr></tfoot>`;
+}
+
+function selectCreator(n) { selected = n; $('#creator-select').value = n; renderCreator();
+  const ch = charts['c-rank']; if (ch) { ch.data.datasets[0].backgroundColor = ch.data.labels.map(l => (l === n ? css('--total') : alpha(css('--total'), .45))); ch.update('none'); }
+  document.getElementById('c-creator').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+
+function renderCreator() {
+  const c = A.byName[selected]; if (!c) return;
+  const types = Object.entries(c.types).filter(([, m]) => m.some(v => v));
+  const palette = ['--total', '--plan', '--commerce', '--biz1', '--biz2', '--goal'].map(css);
+  const upto = Math.max(A.curMonth, ...c.months.map((v, i) => (v ? i + 1 : 0)));
+  draw('c-creator', { type: 'bar',
+    data: { labels: MONTH_LABELS.slice(0, upto), datasets: types.map(([t, m], i) => ({ label: t, data: m.slice(0, upto), backgroundColor: palette[i % palette.length], borderRadius: 4, maxBarThickness: 34 })) },
+    options: baseOptions({ scales: { x: { stacked: true, grid: { display: false }, ticks: { color: css('--muted') } },
+      y: { stacked: true, grid: { color: css('--line') }, border: { display: false }, ticks: { color: css('--muted'), callback: axisWon } } } }) });
+  const cell = v => `<td class="${v ? '' : 'zero'}">${v ? fullWon(v) : '–'}</td>`;
+  const typeRows = Object.entries(c.types);
+  $('#t-creator').innerHTML = `<thead><tr><th>유형</th>${MONTH_LABELS.map(m => `<th>${m}</th>`).join('')}<th>합계</th></tr></thead>
+    <tbody>${typeRows.map(([t, m]) => `<tr><td>${t}</td>${m.map(cell).join('')}<td>${fullWon(sumArr(m))}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>${selected} 합계</td>${c.months.map(cell).join('')}<td>${fullWon(sumArr(c.months))}</td></tr></tfoot>`;
+}
+
+/* 이벤트 */
+$('#refresh').addEventListener('click', loadFromUrl);
+$('#creator-select').addEventListener('change', e => selectCreator(e.target.value));
+$('#inc-biz').addEventListener('change', renderTypes);
+$('#file-input').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  handleText(new TextDecoder('utf-8').decode(await f.arrayBuffer()), '올린 파일 ' + f.name);
+  e.target.value = '';
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => A && render());
+setInterval(() => { if (document.visibilityState === 'visible') loadFromUrl(); }, AUTO_REFRESH_MINUTES * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && A) loadFromUrl(); });
+
+loadFromUrl();
+}
+</script>
+</body>
+</html>
