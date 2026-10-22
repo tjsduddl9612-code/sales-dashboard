@@ -35,53 +35,62 @@ html,body{margin:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
 
-/* 상단 바 */
-header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding-block:14px}
+/* 상단 바 + 탭 */
+header{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding-block:14px 8px}
 .title small{display:block;color:var(--muted);font-size:12.5px;font-weight:500}
 .title h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
 .actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .status{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);padding:6px 12px;background:var(--surface);border:1px solid var(--line);border-radius:999px}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--faint)}
-.status.ok .dot{background:var(--good)} .status.err .dot{background:var(--bad)} .status.load .dot{background:var(--warn);animation:pulse 1s infinite}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
+.status.ok .dot{background:var(--good)} .status.err .dot{background:var(--bad)} .status.load .dot{background:var(--warn);animation:pulse 1s infinite} .status.part .dot{background:var(--warn)}
 @keyframes pulse{50%{opacity:.3}}
 .btn{font:inherit;font-size:13px;font-weight:600;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
 .btn:hover{border-color:var(--faint)}
-.btn:focus-visible,select:focus-visible,label.btn:focus-within{outline:2px solid var(--total);outline-offset:2px}
-.btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn:focus-visible,select:focus-visible,label.btn:focus-within,.tabs button:focus-visible{outline:2px solid var(--total);outline-offset:2px}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{font:inherit;font-size:14px;font-weight:600;color:var(--muted);background:transparent;border:1px solid transparent;border-radius:999px;padding:7px 16px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}
+.tabs button:hover{color:var(--fg);background:var(--surface)}
+.tabs button[aria-selected="true"]{color:var(--bg);background:var(--fg)}
+.tabs .sw{width:8px;height:8px}
 
 main{padding-block:24px 56px;display:flex;flex-direction:column;gap:20px}
 .error-box{background:var(--bad-bg);color:var(--fg);border:1px solid color-mix(in srgb,var(--bad) 40%,transparent);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.error-box.soft{background:var(--warn-bg);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
 .error-box h2{margin:0;font-size:16px;color:var(--bad)}
+.error-box.soft h2{color:var(--warn)}
 .error-box p{margin:0;max-width:70ch}
 .error-box ul{margin:0;padding-left:20px;color:var(--muted);font-size:14px}
+.view{display:flex;flex-direction:column;gap:20px}
+.view-head h2{margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em}
+.view-head p{margin:2px 0 0;color:var(--muted);font-size:14px;max-width:70ch}
 
 /* 카드 */
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
-.kpi.hero{background:var(--total);border-color:var(--total);color:#fff}
-.kpi.hero .lbl,.kpi.hero .sub{color:rgba(255,255,255,.82)}
+.kpi.hero{color:#fff}
+.kpi.hero .lbl,.kpi.hero .sub{color:rgba(255,255,255,.85)}
 .kpi .lbl{font-size:13px;font-weight:600;color:var(--muted)}
 .kpi .val{font-size:26px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.2;word-break:keep-all;overflow-wrap:anywhere}
 .kpi .sub{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 .chip{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;margin-right:4px}
 .chip.up{background:var(--good-bg);color:var(--good)} .chip.down{background:var(--bad-bg);color:var(--bad)} .chip.neu{background:var(--sunk);color:var(--muted)}
-.goalbar{height:6px;border-radius:3px;background:rgba(255,255,255,.25);overflow:hidden;margin-top:4px}
-.kpi:not(.hero) .goalbar{background:var(--sunk)}
+.goalbar{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;margin-top:4px}
 .goalbar span{display:block;height:100%;background:currentColor;border-radius:3px}
 
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .panel.wide{grid-column:1 / -1}
 .phead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:8px 12px}
-.phead h2{margin:0;font-size:17px;font-weight:700;letter-spacing:-.01em}
+.phead h3{margin:0;font-size:17px;font-weight:700;letter-spacing:-.01em}
 .phead p{margin:2px 0 0;font-size:13px;color:var(--muted)}
 .chart-box{position:relative;height:300px;min-width:0}
-.chart-box.tall{height:520px}
-.mini{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .mini div{background:var(--sunk);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .mini span{font-size:12.5px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:6px}
-.mini b{font-size:18px;font-weight:800;word-break:keep-all;font-variant-numeric:tabular-nums;letter-spacing:-.02em;overflow-wrap:anywhere}
+.mini b{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;word-break:keep-all;overflow-wrap:anywhere}
+.mini .note{font-weight:400}
 .sw{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
 .note{font-size:12.5px;color:var(--faint)}
 select{font:inherit;font-size:14px;color:var(--fg);background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:7px 12px}
@@ -94,6 +103,7 @@ th:first-child,td:first-child{text-align:left}
 th{font-size:12px;color:var(--muted);font-weight:600}
 td.zero{color:var(--faint)}
 tfoot td{font-weight:700;border-bottom:0}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:5px;background:var(--warn-bg);color:var(--warn);margin-left:4px;vertical-align:1px}
 
 /* 검증 */
 .checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
@@ -101,29 +111,38 @@ tfoot td{font-weight:700;border-bottom:0}
 .checks .ic{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800}
 .checks .ok .ic{background:var(--good-bg);color:var(--good)} .checks .ng .ic{background:var(--bad-bg);color:var(--bad)} .checks .info .ic{background:var(--warn-bg);color:var(--warn)}
 .checks small{display:block;color:var(--muted);font-size:12.5px}
+.checks h4{margin:8px 0 0;font-size:13px;color:var(--muted)}
 
 footer{color:var(--faint);font-size:12.5px;padding-block:0 40px}
 [hidden]{display:none!important}
 
 @media (max-width:960px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:520px){.kpi .val{font-size:20px}.chart-box{height:260px}.title h1{font-size:18px}.panel{padding:16px}}
+@media (max-width:520px){.kpi .val{font-size:20px}.chart-box{height:260px}.title h1{font-size:18px}.panel{padding:16px}.view-head h2{font-size:19px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="wrap top">
-    <div class="title">
-      <small id="subtitle">구글 시트 실시간 연동</small>
-      <h1>콘텐츠 사업팀 매출 대시보드</h1>
+  <div class="wrap">
+    <div class="top">
+      <div class="title">
+        <small id="subtitle">구글 시트 실시간 연동</small>
+        <h1>콘텐츠 사업팀 매출 대시보드</h1>
+      </div>
+      <div class="actions">
+        <span class="status load" id="status"><span class="dot"></span><span id="status-text">데이터 불러오는 중…</span></span>
+        <button class="btn" id="refresh" type="button">새로고침</button>
+        <label class="btn" for="file-input">CSV 직접 올리기</label>
+        <input type="file" id="file-input" accept=".csv,text/csv" multiple hidden>
+      </div>
     </div>
-    <div class="actions">
-      <span class="status load" id="status"><span class="dot"></span><span id="status-text">데이터 불러오는 중…</span></span>
-      <button class="btn" id="refresh" type="button">새로고침</button>
-      <label class="btn" for="file-input">CSV 직접 올리기</label>
-      <input type="file" id="file-input" accept=".csv,text/csv" hidden>
-    </div>
+    <nav class="tabs" role="tablist" aria-label="카테고리">
+      <button role="tab" id="tab-overview" data-view="overview" aria-selected="true">전체 매출</button>
+      <button role="tab" id="tab-creators" data-view="creators" aria-selected="false">크리에이터별 매출</button>
+      <button role="tab" id="tab-socialbox" data-view="socialbox" aria-selected="false"><i class="sw" style="background:var(--biz1)"></i>소셜박스</button>
+      <button role="tab" id="tab-bodyco" data-view="bodyco" aria-selected="false"><i class="sw" style="background:var(--biz2)"></i>바디코</button>
+    </nav>
   </div>
 </header>
 
@@ -139,66 +158,116 @@ footer{color:var(--faint);font-size:12.5px;padding-block:0 40px}
   </div>
 
   <div id="dashboard" hidden>
-    <!-- 핵심 지표 -->
-    <section class="kpis" id="kpis" aria-label="핵심 지표"></section>
 
-    <div class="grid" style="margin-top:20px">
-      <!-- 월별 추이 -->
-      <section class="panel wide">
-        <div class="phead">
-          <div><h2>월별 매출 추이</h2><p id="trend-desc">월 매출(막대)과 누적 매출(선), 월 목표선</p></div>
-        </div>
-        <div class="chart-box"><canvas id="c-trend" aria-label="월별 매출과 누적 매출 차트" role="img"></canvas></div>
-        <p class="note" id="trend-note"></p>
-      </section>
+    <!-- ───────── 전체 매출 ───────── -->
+    <section class="view" id="v-overview" role="tabpanel" aria-labelledby="tab-overview">
+      <div class="view-head"><h2>전체 매출</h2><p id="ov-desc">콘텐츠 사업팀 월별 매출과 누적, 파트·사업별 비교</p></div>
+      <div class="kpis" id="ov-kpis"></div>
+      <div class="grid">
+        <section class="panel wide">
+          <div class="phead"><div><h3>월별 매출 추이</h3><p>월 매출(막대)과 누적 매출(선), 월 목표선</p></div></div>
+          <div class="chart-box"><canvas id="c-trend" role="img" aria-label="월별 매출과 누적 매출 차트"></canvas></div>
+          <p class="note" id="trend-note"></p>
+        </section>
+        <section class="panel">
+          <div class="phead"><div><h3>기획파트 vs 커머스파트</h3><p id="part-desc"></p></div></div>
+          <div class="mini" id="part-mini"></div>
+          <div class="chart-box"><canvas id="c-part" role="img" aria-label="파트별 월 매출 비교"></canvas></div>
+          <p class="note" id="part-note"></p>
+        </section>
+        <section class="panel">
+          <div class="phead"><div><h3>매출 구성</h3><p>사업(소셜박스·바디코)과 크리에이터 매출의 월별 구성</p></div></div>
+          <div class="mini" id="mix-mini"></div>
+          <div class="chart-box"><canvas id="c-mix" role="img" aria-label="사업과 크리에이터 월별 매출 구성"></canvas></div>
+        </section>
+        <section class="panel wide">
+          <div class="phead"><div><h3>데이터 검증</h3><p>불러올 때마다 시트의 합계와 대시보드 계산을 자동으로 대조합니다</p></div></div>
+          <ul class="checks" id="checks"></ul>
+        </section>
+      </div>
+    </section>
 
-      <!-- 파트 비교 -->
-      <section class="panel">
-        <div class="phead"><div><h2>기획파트 vs 커머스파트</h2><p id="part-desc"></p></div></div>
-        <div class="mini" id="part-mini"></div>
-        <div class="chart-box"><canvas id="c-part" role="img" aria-label="파트별 월 매출 비교"></canvas></div>
-        <p class="note" id="part-note"></p>
-      </section>
+    <!-- ───────── 크리에이터별 ───────── -->
+    <section class="view" id="v-creators" role="tabpanel" aria-labelledby="tab-creators" hidden>
+      <div class="view-head"><h2>크리에이터별 매출</h2><p>소셜박스·바디코를 뺀 크리에이터 매출 · 순위, 콘텐츠 유형, 개인별 월별 내역</p></div>
+      <div class="kpis" id="cr-kpis"></div>
+      <div class="grid">
+        <section class="panel">
+          <div class="phead"><div><h3>크리에이터 순위</h3><p>연간 누적 · 막대를 누르면 아래 상세가 바뀝니다</p></div></div>
+          <div class="chart-box" id="rank-box"><canvas id="c-rank" role="img" aria-label="크리에이터별 누적 매출 순위"></canvas></div>
+        </section>
+        <section class="panel">
+          <div class="phead">
+            <div><h3>콘텐츠 유형별 매출</h3><p>매출 유형별 연간 합계</p></div>
+            <label class="toggle"><input type="checkbox" id="inc-biz"> 사업 포함</label>
+          </div>
+          <div class="chart-box"><canvas id="c-type" role="img" aria-label="콘텐츠 유형별 매출"></canvas></div>
+          <div class="tbl"><table id="t-type"></table></div>
+        </section>
+        <section class="panel wide">
+          <div class="phead">
+            <div><h3>크리에이터 상세</h3><p>월별 · 유형별 매출</p></div>
+            <select id="creator-select" aria-label="크리에이터 선택"></select>
+          </div>
+          <div class="chart-box"><canvas id="c-creator" role="img" aria-label="선택한 크리에이터의 월별 매출"></canvas></div>
+          <div class="tbl"><table id="t-creator"></table></div>
+        </section>
+      </div>
+    </section>
 
-      <!-- 사업 비교 -->
-      <section class="panel">
-        <div class="phead"><div><h2>사업별 매출 비교</h2><p>소셜박스 · 바디코 월별 매출</p></div></div>
-        <div class="mini" id="biz-mini"></div>
-        <div class="chart-box"><canvas id="c-biz" role="img" aria-label="사업별 월 매출 비교"></canvas></div>
-      </section>
+    <!-- ───────── 소셜박스 ───────── -->
+    <section class="view" id="v-socialbox" role="tabpanel" aria-labelledby="tab-socialbox" hidden>
+      <div class="view-head"><h2>소셜박스 매출</h2><p>월간 총 매출 시트의 소셜박스(마켓) 매출</p></div>
+      <div class="kpis" id="sb-kpis"></div>
+      <div class="grid">
+        <section class="panel wide">
+          <div class="phead"><div><h3>소셜박스 월별 매출</h3><p>월 매출(막대)과 팀 전체 매출 대비 비중(선)</p></div></div>
+          <div class="chart-box"><canvas id="c-sb" role="img" aria-label="소셜박스 월별 매출"></canvas></div>
+        </section>
+        <section class="panel wide">
+          <div class="phead"><div><h3>월별 상세</h3><p>시트에 입력된 줄 그대로 보여줍니다</p></div></div>
+          <div class="tbl"><table id="t-sb"></table></div>
+          <p class="note">제품·채널별 상세 시트를 웹에 게시해 주시면 이 탭에 추가할 수 있어요.</p>
+        </section>
+      </div>
+    </section>
 
-      <!-- 크리에이터 순위 -->
-      <section class="panel">
-        <div class="phead"><div><h2>크리에이터별 매출</h2><p>연간 누적 순위 · 막대를 누르면 아래 상세가 바뀝니다</p></div></div>
-        <div class="chart-box tall" id="rank-box"><canvas id="c-rank" role="img" aria-label="크리에이터별 누적 매출 순위"></canvas></div>
-      </section>
+    <!-- ───────── 바디코 ───────── -->
+    <section class="view" id="v-bodyco" role="tabpanel" aria-labelledby="tab-bodyco" hidden>
+      <div class="view-head"><h2>바디코 매출</h2><p>월간 총 매출 시트의 바디코(자체몰) 매출과 원가 정산 시트의 품목별 판매</p></div>
+      <div class="kpis" id="bc-kpis"></div>
+      <div class="grid">
+        <section class="panel wide">
+          <div class="phead"><div><h3>바디코 월별 매출</h3><p>자체몰 월 매출(막대)과 팀 전체 매출 대비 비중(선)</p></div></div>
+          <div class="chart-box"><canvas id="c-bc" role="img" aria-label="바디코 월별 매출"></canvas></div>
+        </section>
+      </div>
 
-      <!-- 콘텐츠 유형 -->
-      <section class="panel">
-        <div class="phead">
-          <div><h2>콘텐츠 유형별 매출</h2><p>매출 유형별 연간 합계</p></div>
-          <label class="toggle"><input type="checkbox" id="inc-biz"> 사업(소셜박스·바디코) 포함</label>
-        </div>
-        <div class="chart-box"><canvas id="c-type" role="img" aria-label="콘텐츠 유형별 매출"></canvas></div>
-        <div class="tbl"><table id="t-type"></table></div>
-      </section>
+      <div class="error-box soft" id="bc-missing" hidden>
+        <h2 id="bc-missing-title">원가 정산 시트가 아직 연결되지 않았어요</h2>
+        <p id="bc-missing-msg"></p>
+      </div>
 
-      <!-- 크리에이터 상세 -->
-      <section class="panel wide">
-        <div class="phead">
-          <div><h2>크리에이터 상세</h2><p>월별 · 유형별 매출</p></div>
-          <select id="creator-select" aria-label="크리에이터 선택"></select>
-        </div>
-        <div class="chart-box"><canvas id="c-creator" role="img" aria-label="선택한 크리에이터의 월별 매출"></canvas></div>
-        <div class="tbl"><table id="t-creator"></table></div>
-      </section>
-
-      <!-- 검증 -->
-      <section class="panel wide">
-        <div class="phead"><div><h2>데이터 검증</h2><p>불러올 때마다 시트의 합계와 대시보드 계산을 자동으로 대조합니다</p></div></div>
-        <ul class="checks" id="checks"></ul>
-      </section>
-    </div>
+      <div class="grid" id="bc-settle">
+        <section class="panel wide">
+          <div class="phead"><div><h3>원가 정산 기간별 요약</h3><p>정산 금액 = 품목별 원가 × 판매수량</p></div></div>
+          <div class="mini" id="bc-periods"></div>
+        </section>
+        <section class="panel">
+          <div class="phead"><div><h3>품목별 판매수량</h3><p>정산 기간별 · 증정 제외</p></div></div>
+          <div class="chart-box"><canvas id="c-bc-qty" role="img" aria-label="바디코 품목별 판매수량"></canvas></div>
+        </section>
+        <section class="panel">
+          <div class="phead"><div><h3>품목별 정산 금액</h3><p>정산 기간 합계 · 증정 포함</p></div></div>
+          <div class="chart-box"><canvas id="c-bc-amt" role="img" aria-label="바디코 품목별 정산 금액"></canvas></div>
+        </section>
+        <section class="panel wide">
+          <div class="phead"><div><h3>품목별 상세</h3><p>판매수량 · 정산 금액 · 원가 변동</p></div></div>
+          <div class="tbl"><table id="t-bc"></table></div>
+          <ul class="checks" id="bc-checks"></ul>
+        </section>
+      </div>
+    </section>
   </div>
 </main>
 <footer class="wrap" id="footer">데이터 출처: 구글 스프레드시트 (웹에 게시 CSV)</footer>
@@ -207,10 +276,16 @@ footer{color:var(--faint);font-size:12.5px;padding-block:0 40px}
 /* ==================================================================
    ① 설정 — 시트 주소가 바뀌면 여기만 고치세요
    ================================================================== */
+// 월간 총 매출 시트 (웹에 게시 → CSV 링크)
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ74jUbjtDP8KKrBNWqWD5tKwqFmTojI1TI0nAa4atkTwUQW91LncG4hspoE2o2hfZRz7TR4I-NXRSr/pub?output=csv';
+// 바디코 원가 정산 시트 (웹에 게시 → CSV 링크). 따옴표 '' 사이에 붙여넣으세요.
+const BODYCO_CSV_URL = '';
+
 const BUSINESS_NAMES = ['소셜박스', '바디코'];   // 크리에이터가 아닌 '사업'으로 볼 이름
 const AUTO_REFRESH_MINUTES = 5;                  // 자동 새로고침 간격(분)
 const DEFAULT_GOAL = 250000000;                  // 시트에서 목표를 못 찾을 때 쓸 월 목표(원)
+// 같은 품목인데 시트마다 이름이 조금 다를 때 묶어주는 표 (공백은 자동으로 무시)
+const PRODUCT_ALIASES = { '스모어P': '애착스모어P', '애착보정P': '애착보정팬티' };
 
 /* ==================================================================
    ② 파서 — 병합 셀·빈 셀·여러 줄 헤더를 처리해 숫자 데이터로 바꿉니다
@@ -218,10 +293,10 @@ const DEFAULT_GOAL = 250000000;                  // 시트에서 목표를 못 �
 // === PARSER START ===
 const MONTH_COUNT = 12;
 
-// "₩1,234", "-₩22,688,068", " ", "" → 숫자 또는 null(빈 칸)
+// "₩1,234", "-₩22,688,068", "6,422", " ", "" → 숫자 또는 null(빈 칸)
 function parseWon(v) {
   if (v === undefined || v === null) return null;
-  let s = String(v).replace(/[\s₩원,]/g, '');
+  let s = String(v).replace(/[\s₩원건개,]/g, '');
   if (s === '' || s === '-') return null;
   let neg = false;
   if (/^\(.*\)$/.test(s)) { neg = true; s = s.slice(1, -1); }
@@ -239,17 +314,28 @@ function normalizeType(t) {
 }
 
 const sumArr = a => a.reduce((s, v) => s + (v || 0), 0);
-
-function parseSheet(rows) {
-  // 모든 칸 앞뒤 공백 제거, 열 개수 맞추기
+const toGrid = rows => {
   const width = Math.max(...rows.map(r => r.length));
-  const grid = rows.map(r => Array.from({ length: width }, (_, i) => (r[i] ?? '').toString().trim()));
+  return rows.map(r => Array.from({ length: width }, (_, i) => (r[i] ?? '').toString().trim()));
+};
+
+// 어떤 시트인지 내용으로 알아냅니다 (직접 올린 파일 구분용)
+function detectSheet(rows) {
+  const flat = rows.slice(0, 40).map(r => r.join('|')).join('\n');
+  if (flat.includes('구분') && flat.includes('누적')) return 'main';
+  if (flat.includes('품목') && flat.includes('정산')) return 'bodyco';
+  return null;
+}
+
+/* 월간 총 매출 시트 */
+function parseSheet(rows) {
+  const grid = toGrid(rows);
 
   // 월 목표: "2.5억" 같은 문구 찾기
   let goal = DEFAULT_GOAL;
-  for (const r of grid) for (const c of r) {
+  outer: for (const r of grid) for (const c of r) {
     const m = c.includes('목표') && c.match(/([\d.]+)\s*억/);
-    if (m) { goal = Math.round(parseFloat(m[1]) * 1e8); break; }
+    if (m) { goal = Math.round(parseFloat(m[1]) * 1e8); break outer; }
   }
 
   // '구분' 칸이 있는 줄 = 각 표의 헤더
@@ -268,23 +354,18 @@ function parseSheet(rows) {
   });
   if (!headers.length) throw new Error('시트에서 "구분" 헤더를 찾지 못했어요. 시트 구조가 바뀌었는지 확인해 주세요.');
 
-  const readMonths = r => headerMonths.map(c => (c >= 0 ? parseWon(r[c]) : null));
-  let headerMonths = [];
-
   const result = { goal, year: null, total: null, plan: null, commerce: null, entries: [], declaredCum: {} };
 
   headers.forEach((h, k) => {
-    headerMonths = h.monthCols;
+    const readMonths = r => h.monthCols.map(c => (c >= 0 ? parseWon(r[c]) : null));
     const end = k + 1 < headers.length ? headers[k + 1].row : grid.length;
     const body = grid.slice(h.row + 1, end);
-    const isCreator = h.title.includes('크리에이터');
 
-    if (!isCreator) {
+    if (!h.title.includes('크리에이터')) {
       // 요약 표: 숫자가 있는 첫 줄이 데이터 줄
       const r = body.find(r => readMonths(r).some(v => v !== null) || parseWon(r[h.cumCol]) !== null);
       if (!r) return;
-      const sec = { title: h.title, note: h.note, year: r[h.typeCol] || null,
-        cum: parseWon(r[h.cumCol]), months: readMonths(r) };
+      const sec = { title: h.title, note: h.note, year: r[h.typeCol] || null, cum: parseWon(r[h.cumCol]), months: readMonths(r) };
       if (sec.year && /^\d{4}$/.test(sec.year)) result.year = result.year || Number(sec.year);
       if (h.title.includes('전체')) result.total = sec;
       else if (h.title.includes('기획')) result.plan = sec;
@@ -296,8 +377,7 @@ function parseSheet(rows) {
     let name = null, type = null;
     for (const r of body) {
       const nm = r[h.labelCol], tp = r[h.typeCol];
-      const months = readMonths(r);
-      const cum = parseWon(r[h.cumCol]);
+      const months = readMonths(r), cum = parseWon(r[h.cumCol]);
       if (!nm && !tp && months.every(v => v === null) && cum === null) continue; // 완전히 빈 줄
       if (nm) { name = nm; type = null; if (cum !== null) result.declaredCum[name] = cum; }
       if (tp) type = tp;
@@ -317,12 +397,15 @@ function analyze(d, today = new Date()) {
   const addTo = (a, b) => a.forEach((_, i) => (a[i] += b[i]));
   const names = [...new Set(d.entries.map(e => e.name))];
   const byName = {}, byType = {}, byTypeCreatorsOnly = {};
+  const bizMonthly = zeros(), creatorMonthly = zeros();
   for (const e of d.entries) {
-    (byName[e.name] ||= { name: e.name, isBusiness: e.isBusiness, months: zeros(), types: {} });
+    (byName[e.name] ||= { name: e.name, isBusiness: e.isBusiness, months: zeros(), types: {}, rows: [] });
     addTo(byName[e.name].months, e.months);
     addTo((byName[e.name].types[e.type] ||= zeros()), e.months);
+    byName[e.name].rows.push(e);
     addTo((byType[e.type] ||= zeros()), e.months);
-    if (!e.isBusiness) addTo((byTypeCreatorsOnly[e.type] ||= zeros()), e.months);
+    if (!e.isBusiness) { addTo((byTypeCreatorsOnly[e.type] ||= zeros()), e.months); addTo(creatorMonthly, e.months); }
+    else addTo(bizMonthly, e.months);
   }
   const entriesMonthly = zeros();
   d.entries.forEach(e => addTo(entriesMonthly, e.months));
@@ -340,7 +423,7 @@ function analyze(d, today = new Date()) {
   // 검증 항목
   const checks = [];
   const eq = (a, b) => Math.round(a) === Math.round(b);
-  const won = n => '₩' + Math.round(n).toLocaleString('ko-KR');
+  const won = n => (n < 0 ? '-' : '') + '₩' + Math.abs(Math.round(n)).toLocaleString('ko-KR');
   for (const [key, label] of [['total', '팀 전체'], ['plan', '기획파트'], ['commerce', '커머스파트']]) {
     const s = d[key]; if (!s) { checks.push({ st: 'ng', t: `${label} 표를 찾지 못했어요` }); continue; }
     const calc = sumArr(s.months);
@@ -362,8 +445,80 @@ function analyze(d, today = new Date()) {
   }
 
   return { year, curMonth, total, totalCum, running, forecast, lastIdx, actualIdx,
-    byName, byType, byTypeCreatorsOnly, names, checks, goal: d.goal,
+    byName, byType, byTypeCreatorsOnly, bizMonthly, creatorMonthly, names, checks, goal: d.goal,
     plan: d.plan, commerce: d.commerce, declaredTotalCum: d.total.cum };
+}
+
+/* 바디코 원가 정산 시트 */
+function productKey(name) {
+  const gift = /^\[증정\]/.test(name);
+  let key = name.replace(/^\[증정\]\s*/, '').replace(/\s+/g, '');
+  key = PRODUCT_ALIASES[key] || key;
+  return { key, gift };
+}
+function parseBodyco(rows) {
+  const grid = toGrid(rows);
+  const periods = [];
+  let title = null, cols = null, cur = null;
+  for (const r of grid) {
+    const filled = r.filter(c => c !== '');
+    // 제목 줄: 칸 하나에만 글자가 있고 '정산'이 들어간 줄 (예: "5월 바디코 원가 정산")
+    if (filled.length === 1 && filled[0].includes('정산')) { title = filled[0]; cols = null; continue; }
+    // 헤더 줄
+    const pi = r.indexOf('품목');
+    if (pi >= 0) {
+      const find = kw => r.findIndex(c => c.includes(kw));
+      cols = { name: pi, cost: find('원가'), qty: find('수량'), amt: find('정산') >= 0 ? find('정산') : find('금액') };
+      const months = [...(title || '').matchAll(/(\d{1,2})\s*월/g)].map(m => Number(m[1]));
+      cur = { title: title || `정산 ${periods.length + 1}`, label: months.length > 1 ? `${months[0]}~${months.at(-1)}월` : months.length ? `${months[0]}월` : `정산 ${periods.length + 1}`,
+        from: months[0] || null, to: months.at(-1) || null, items: [], declared: null };
+      periods.push(cur);
+      continue;
+    }
+    if (!cols || !cur) continue;
+    const nm = r[cols.name];
+    if (!nm) continue;
+    if (/^(총|합계)/.test(nm)) { cur.declared = { qty: parseWon(r[cols.qty]), amt: parseWon(r[cols.amt]) }; cols = null; continue; }
+    const { key, gift } = productKey(nm);
+    cur.items.push({ raw: nm, key, gift, cost: parseWon(r[cols.cost]), qty: parseWon(r[cols.qty]) || 0, amt: parseWon(r[cols.amt]) || 0 });
+  }
+  if (!periods.length) throw new Error('바디코 시트에서 "품목" 헤더를 찾지 못했어요.');
+  return periods;
+}
+function analyzeBodyco(periods) {
+  const checks = [];
+  const won = n => '₩' + Math.round(n).toLocaleString('ko-KR');
+  const labels = {};   // 품목 표시 이름 (증정이 아닌 첫 이름 사용)
+  for (const p of periods) for (const it of p.items) if (!labels[it.key] || (!it.gift && labels[it.key].gift)) labels[it.key] = { name: it.raw.replace(/^\[증정\]\s*/, ''), gift: it.gift };
+  const keys = Object.keys(labels);
+  const stats = periods.map(p => {
+    const sale = p.items.filter(i => !i.gift), gift = p.items.filter(i => i.gift);
+    const qty = sumArr(p.items.map(i => i.qty)), amt = sumArr(p.items.map(i => i.amt));
+    const saleQty = sumArr(sale.map(i => i.qty)), giftQty = sumArr(gift.map(i => i.qty));
+    const badRows = p.items.filter(i => i.cost !== null && i.qty && Math.round(i.cost * i.qty) !== Math.round(i.amt));
+    checks.push({ st: badRows.length ? 'ng' : 'ok', t: `${p.label}: 품목별 원가 × 수량 = 정산 금액 ${badRows.length ? '불일치 ' + badRows.length + '건' : '(모두 일치)'}`,
+      s: badRows.map(i => `${i.raw}: ${won(i.cost)} × ${i.qty} = ${won(i.cost * i.qty)} / 시트 ${won(i.amt)}`).join(' · ') });
+    if (p.declared) {
+      const okA = p.declared.amt === null || Math.round(p.declared.amt) === Math.round(amt);
+      checks.push({ st: okA ? 'ok' : 'ng', t: `${p.label}: 정산 금액 합계 ${won(amt)} ${okA ? '= 시트 총계' : '≠ 시트 총계 ' + won(p.declared.amt)}` });
+      if (p.declared.qty !== null && p.declared.qty !== qty) {
+        const exGift = p.declared.qty === saleQty;
+        checks.push({ st: 'ng', t: `${p.label}: 판매수량 합계 ${qty.toLocaleString()}건 ≠ 시트 총계 ${p.declared.qty.toLocaleString()}건`,
+          s: exGift ? `차이 ${(qty - p.declared.qty).toLocaleString()}건이 증정 수량과 같아요. 이 기간만 총계에서 증정이 빠진 것 같아요. 대시보드는 품목을 더한 값을 씁니다.` : '시트의 총계 수식 범위를 확인해 주세요. 대시보드는 품목을 더한 값을 씁니다.' });
+      } else if (p.declared.qty !== null) checks.push({ st: 'ok', t: `${p.label}: 판매수량 합계 ${qty.toLocaleString()}건 = 시트 총계` });
+    }
+    const byKey = {};
+    for (const it of p.items) {
+      const b = (byKey[it.key] ||= { saleQty: 0, giftQty: 0, amt: 0, cost: null });
+      if (it.gift) b.giftQty += it.qty; else b.saleQty += it.qty;
+      b.amt += it.amt; if (it.cost !== null && !it.gift) b.cost = it.cost;
+      if (b.cost === null && it.cost !== null) b.cost = it.cost;
+    }
+    return { ...p, qty, amt, saleQty, giftQty, byKey };
+  });
+  return { periods: stats, keys, labels, checks,
+    totalQty: sumArr(stats.map(s => s.qty)), totalAmt: sumArr(stats.map(s => s.amt)),
+    totalSale: sumArr(stats.map(s => s.saleQty)), totalGift: sumArr(stats.map(s => s.giftQty)) };
 }
 // === PARSER END ===
 
@@ -375,6 +530,7 @@ const $ = s => document.querySelector(s);
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const MONTH_LABELS = Array.from({ length: MONTH_COUNT }, (_, i) => i + 1 + '월');
 const fullWon = n => (n < 0 ? '-' : '') + '₩' + Math.abs(Math.round(n)).toLocaleString('ko-KR');
+const num = n => Math.round(n).toLocaleString('ko-KR');
 // 1,034,270,787 → "10억 3,427만원"
 function shortWon(n) {
   const neg = n < 0; n = Math.abs(Math.round(n));
@@ -384,77 +540,6 @@ function shortWon(n) {
   return (neg ? '-' : '') + s + '원';
 }
 const axisWon = v => (Math.abs(v) >= 1e8 ? (v / 1e8).toFixed(1).replace(/\.0$/, '') + '억' : Math.round(v / 1e4).toLocaleString('ko-KR') + '만');
-
-let lastRows = null, charts = {}, A = null, selected = null;
-
-function setStatus(kind, text) {
-  $('#status').className = 'status ' + kind;
-  $('#status-text').textContent = text;
-}
-function showError(title, msg) {
-  $('#error-title').textContent = title;
-  $('#error-msg').textContent = msg;
-  $('#error-box').hidden = false;
-  setStatus('err', '불러오기 실패');
-}
-
-async function loadFromUrl() {
-  setStatus('load', '데이터 불러오는 중…');
-  let res;
-  try {
-    // t= 값은 브라우저 캐시를 피하려는 용도입니다
-    res = await fetch(CSV_URL + (CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
-  } catch (e) {
-    return showError('시트에 연결하지 못했어요',
-      '인터넷 연결이 끊겼거나, 브라우저가 다른 사이트의 데이터 읽기를 막았어요(CORS). 웹에 게시 링크(…/pub?output=csv)가 맞는지 확인해 주세요. 상세: ' + e.message);
-  }
-  if (!res.ok) return showError(`시트가 응답하지 않아요 (오류 ${res.status})`,
-    res.status === 404 ? '게시가 중지되었거나 링크가 바뀌었어요. 시트에서 웹에 게시를 다시 확인해 주세요.' : '잠시 후 다시 시도해 주세요.');
-  // 구글은 UTF-8로 보내지만, 혹시 모를 경우를 위해 직접 UTF-8로 해석합니다
-  const text = new TextDecoder('utf-8').decode(await res.arrayBuffer());
-  handleText(text, '구글 시트');
-}
-
-function handleText(text, source) {
-  text = text.replace(/^﻿/, '');
-  if (/^\s*</.test(text)) return showError('CSV가 아닌 웹페이지를 받았어요',
-    '시트가 로그인 화면이나 일반 웹페이지로 응답했어요. 웹에 게시 형식을 "쉼표로 구분된 값(.csv)"으로 골랐는지 확인해 주세요.');
-  const parsed = Papa.parse(text, { skipEmptyLines: false });
-  if (parsed.errors.length && !parsed.data.length) return showError('CSV를 읽지 못했어요', parsed.errors[0].message);
-  try {
-    const data = parseSheet(parsed.data);
-    A = analyze(data);
-    lastRows = parsed.data;
-  } catch (e) {
-    return showError('시트 구조를 해석하지 못했어요', e.message);
-  }
-  $('#error-box').hidden = true;
-  $('#dashboard').hidden = false;
-  const t = new Date();
-  setStatus('ok', `${source} · ${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')} 업데이트`);
-  render();
-}
-
-/* 공통 차트 설정 */
-function baseOptions(extra = {}) {
-  const grid = css('--line'), tick = css('--muted');
-  return Object.assign({
-    responsive: true, maintainAspectRatio: false,
-    interaction: { mode: 'index', intersect: false },
-    plugins: {
-      legend: { position: 'bottom', labels: { color: tick, usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 10, padding: 14, font: { family: css('--font'), size: 12 } } },
-      tooltip: { callbacks: { label: c => `${c.dataset.label}: ${fullWon(c.raw ?? 0)}` }, titleFont: { family: css('--font') }, bodyFont: { family: css('--font') } }
-    },
-    scales: {
-      x: { grid: { display: false }, ticks: { color: tick, font: { family: css('--font') } } },
-      y: { grid: { color: grid }, border: { display: false }, ticks: { color: tick, callback: axisWon, font: { family: css('--font') } } }
-    }
-  }, extra);
-}
-function draw(id, config) {
-  if (charts[id]) charts[id].destroy();
-  charts[id] = new Chart(document.getElementById(id), config);
-}
 // '#3B5BDB' + 0.4 → 'rgba(59,91,219,0.4)' (차트 캔버스용 반투명 색)
 function alpha(hex, a) {
   const h = hex.replace('#', '');
@@ -463,149 +548,360 @@ function alpha(hex, a) {
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
 }
 
-function render() {
-  const { year, curMonth, total, totalCum, running, forecast, lastIdx, goal } = A;
-  $('#subtitle').textContent = `${year}년 · 구글 시트 실시간 연동`;
+const VIEWS = ['overview', 'creators', 'socialbox', 'bodyco'];
+let view = 'overview', charts = {}, A = null, B = null, B_err = null, selected = null;
+const sourceState = { main: null, bodyco: null };
 
-  /* 1) 핵심 지표 카드 */
+/* ── 불러오기 ── */
+function updateStatus() {
+  const m = sourceState.main, b = sourceState.bodyco;
+  const t = new Date(), hm = `${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}`;
+  if (m === 'loading' || b === 'loading') return setStatus('load', '데이터 불러오는 중…');
+  if (m && m.ok && (!BODYCO_CSV_URL && !b || (b && b.ok))) return setStatus('ok', `${m.src} · ${hm} 업데이트`);
+  if (m && m.ok) return setStatus('part', `${hm} · 바디코 정산 ${BODYCO_CSV_URL ? '불러오기 실패' : '미연결'}`);
+  setStatus('err', '불러오기 실패');
+}
+function setStatus(kind, text) { $('#status').className = 'status ' + kind; $('#status-text').textContent = text; }
+function showError(title, msg) {
+  $('#error-title').textContent = title; $('#error-msg').textContent = msg; $('#error-box').hidden = false;
+}
+
+async function fetchCsv(url) {
+  let res;
+  try {
+    // t= 값은 브라우저 캐시를 피하려는 용도입니다
+    res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
+  } catch (e) {
+    throw new Error('시트에 연결하지 못했어요. 인터넷 연결이 끊겼거나, 브라우저가 다른 사이트의 데이터 읽기를 막았어요(CORS). 웹에 게시 링크(…/pub?output=csv)가 맞는지 확인해 주세요. 상세: ' + e.message);
+  }
+  if (!res.ok) throw new Error(res.status === 404 ? `시트가 응답하지 않아요(오류 404). 게시가 중지되었거나 링크가 바뀌었어요.` : `시트가 응답하지 않아요(오류 ${res.status}). 잠시 후 다시 시도해 주세요.`);
+  // 구글은 UTF-8로 보내지만, 혹시 모를 경우를 위해 직접 UTF-8로 해석합니다
+  return new TextDecoder('utf-8').decode(await res.arrayBuffer());
+}
+function toRows(text) {
+  text = text.replace(/^﻿/, '');
+  if (/^\s*</.test(text)) throw new Error('CSV가 아닌 웹페이지를 받았어요. 웹에 게시 형식을 "쉼표로 구분된 값(.csv)"으로 골랐는지 확인해 주세요.');
+  return Papa.parse(text, { skipEmptyLines: false }).data;
+}
+
+function applyMain(rows, src) {
+  A = analyze(parseSheet(rows));
+  sourceState.main = { ok: true, src };
+  $('#error-box').hidden = true; $('#dashboard').hidden = false;
+}
+function applyBodyco(rows, src) {
+  B = analyzeBodyco(parseBodyco(rows)); B_err = null;
+  sourceState.bodyco = { ok: true, src };
+}
+
+async function loadAll() {
+  sourceState.main = 'loading'; if (BODYCO_CSV_URL) sourceState.bodyco = 'loading';
+  updateStatus();
+  const jobs = [
+    fetchCsv(CSV_URL).then(t => applyMain(toRows(t), '구글 시트')).catch(e => {
+      sourceState.main = { ok: false }; if (!A) showError('데이터를 불러오지 못했어요', e.message); })
+  ];
+  if (BODYCO_CSV_URL) jobs.push(fetchCsv(BODYCO_CSV_URL).then(t => applyBodyco(toRows(t), '구글 시트')).catch(e => {
+    sourceState.bodyco = { ok: false }; B_err = e.message; }));
+  await Promise.all(jobs);
+  updateStatus();
+  if (A) renderAll();
+}
+
+/* ── 탭 ── */
+function showView(v, push = true) {
+  if (!VIEWS.includes(v)) v = 'overview';
+  view = v;
+  VIEWS.forEach(x => { $('#v-' + x).hidden = x !== v; $('#tab-' + x).setAttribute('aria-selected', x === v); });
+  if (push && location.hash !== '#' + v) history.replaceState(null, '', '#' + v);
+  if (A) renderView();   // 숨겨진 탭의 차트는 크기가 0이라, 보이는 탭만 그립니다
+  window.scrollTo({ top: 0 });
+}
+
+/* ── 공통 차트 설정 ── */
+function baseOptions(extra = {}) {
+  const grid = css('--line'), tick = css('--muted'), font = { family: css('--font') };
+  return Object.assign({
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'bottom', labels: { color: tick, usePointStyle: true, pointStyle: 'rectRounded', boxWidth: 10, padding: 14, font: { ...font, size: 12 } } },
+      tooltip: { callbacks: { label: c => `${c.dataset.label}: ${fullWon(c.raw ?? 0)}` }, titleFont: font, bodyFont: font }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: tick, font } },
+      y: { grid: { color: grid }, border: { display: false }, ticks: { color: tick, callback: axisWon, font } }
+    }
+  }, extra);
+}
+function draw(id, config) { if (charts[id]) charts[id].destroy(); charts[id] = new Chart(document.getElementById(id), config); }
+const C = () => ({ total: css('--total'), goal: css('--goal'), plan: css('--plan'), com: css('--commerce'), b1: css('--biz1'), b2: css('--biz2'), muted: css('--muted'), fg: css('--fg'), line: css('--line') });
+const PALETTE = () => ['--total', '--plan', '--commerce', '--biz1', '--biz2', '--goal', '--muted'].map(css);
+
+function kpi(label, value, sub, opts = {}) {
+  return `<div class="kpi${opts.hero ? ' hero' : ''}"${opts.hero ? ` style="background:var(${opts.hero});border-color:var(${opts.hero})"` : ''}${opts.color ? ` style="color:var(${opts.color})"` : ''}>
+    <span class="lbl">${label}</span><span class="val"${opts.color ? ' style="color:var(--fg)"' : ''}>${value}</span>${opts.bar !== undefined ? `<div class="goalbar"><span style="width:${Math.max(0, Math.min(100, opts.bar))}%"></span></div>` : ''}<span class="sub">${sub}</span></div>`;
+}
+function deltaChip(cur, prev) {
+  if (!prev) return '전월 데이터 없음';
+  const d = (cur - prev) / Math.abs(prev);
+  return `<span class="chip ${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d * 100).toFixed(1)}%</span>전월 ${shortWon(prev)}`;
+}
+
+function renderAll() {
+  $('#subtitle').textContent = `${A.year}년 · 구글 시트 실시간 연동`;
+  renderView();
+  const ng = A.checks.filter(c => c.st === 'ng').length + (B ? B.checks.filter(c => c.st === 'ng').length : 0);
+  $('#footer').textContent = `데이터 출처: 구글 스프레드시트(웹에 게시 CSV) · ${AUTO_REFRESH_MINUTES}분마다 자동 새로고침 · 검증 ${ng ? ng + '건 확인 필요' : '모두 통과'}`;
+}
+function renderView() {
+  ({ overview: renderOverview, creators: renderCreators, socialbox: renderSocialbox, bodyco: renderBodyco })[view]();
+}
+
+/* ───────── 전체 매출 ───────── */
+function renderOverview() {
+  const { year, curMonth, total, totalCum, running, forecast, lastIdx, goal } = A, c = C();
   const last = lastIdx >= 0 ? total[lastIdx] : 0, prev = lastIdx > 0 ? total[lastIdx - 1] : 0;
-  const diff = prev ? (last - prev) / Math.abs(prev) : 0;
-  const actualMonths = A.actualIdx.filter(i => i <= lastIdx);
-  const avg = actualMonths.length ? actualMonths.reduce((s, i) => s + total[i], 0) / actualMonths.length : 0;
-  const hit = actualMonths.filter(i => total[i] >= goal).length;
-  const best = actualMonths.reduce((b, i) => (total[i] > total[b] ? i : b), actualMonths[0] ?? 0);
-  const fc = forecast.reduce((s, v) => s + v, 0);
-  const inProgress = lastIdx === curMonth - 1;
-  $('#kpis').innerHTML = `
-    <div class="kpi hero"><span class="lbl">${year}년 누적 매출</span><span class="val">${shortWon(totalCum)}</span>
-      <span class="sub">${fullWon(totalCum)}${fc ? ` · 예정 ${shortWon(fc)} 포함` : ''}</span></div>
-    <div class="kpi"><span class="lbl">${lastIdx + 1}월 매출${inProgress ? ' (진행 중)' : ''}</span><span class="val">${shortWon(last)}</span>
-      <span class="sub">${prev ? `<span class="chip ${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '▲' : '▼'} ${Math.abs(diff * 100).toFixed(1)}%</span>전월 ${shortWon(prev)}` : '전월 데이터 없음'}</span></div>
-    <div class="kpi"><span class="lbl">월 평균 매출</span><span class="val">${shortWon(avg)}</span>
-      <span class="sub">1~${lastIdx + 1}월 기준 · 최고 ${best + 1}월 ${shortWon(total[best] || 0)}</span></div>
-    <div class="kpi" style="color:var(--goal)"><span class="lbl">월 목표 ${shortWon(goal)} 대비</span><span class="val" style="color:var(--fg)">${Math.round(avg / goal * 100)}%</span>
-      <div class="goalbar"><span style="width:${Math.min(100, avg / goal * 100)}%"></span></div>
-      <span class="sub">목표 달성한 달 ${hit} / ${actualMonths.length}개월</span></div>`;
+  const act = A.actualIdx.filter(i => i <= lastIdx);
+  const avg = act.length ? act.reduce((s, i) => s + total[i], 0) / act.length : 0;
+  const hit = act.filter(i => total[i] >= goal).length;
+  const best = act.reduce((b, i) => (total[i] > total[b] ? i : b), act[0] ?? 0);
+  const fc = sumArr(forecast);
+  $('#ov-kpis').innerHTML =
+    kpi(`${year}년 누적 매출`, shortWon(totalCum), `${fullWon(totalCum)}${fc ? ` · 예정 ${shortWon(fc)} 포함` : ''}`, { hero: '--total' }) +
+    kpi(`${lastIdx + 1}월 매출${lastIdx === curMonth - 1 ? ' (진행 중)' : ''}`, shortWon(last), deltaChip(last, prev)) +
+    kpi('월 평균 매출', shortWon(avg), `1~${lastIdx + 1}월 기준 · 최고 ${best + 1}월 ${shortWon(total[best] || 0)}`) +
+    kpi(`월 목표 ${shortWon(goal)} 대비`, Math.round(avg / goal * 100) + '%', `목표 달성한 달 ${hit} / ${act.length}개월`, { color: '--goal', bar: avg / goal * 100 });
 
-  /* 2) 월별 추이 */
-  const C = { total: css('--total'), goal: css('--goal'), plan: css('--plan'), com: css('--commerce'), b1: css('--biz1'), b2: css('--biz2'), muted: css('--muted') };
-  const actualData = total.map((v, i) => (i < curMonth ? v : null));
-  const forecastData = total.map((v, i) => (i >= curMonth && v ? v : null));
   draw('c-trend', {
     data: { labels: MONTH_LABELS, datasets: [
-      { type: 'bar', label: '월 매출', data: actualData, backgroundColor: C.total, borderRadius: 6, maxBarThickness: 38, yAxisID: 'y', order: 2 },
-      { type: 'bar', label: '예정 매출', data: forecastData, backgroundColor: alpha(C.total, .3), borderColor: C.total, borderWidth: 1.5, borderDash: [4, 3], borderRadius: 6, maxBarThickness: 38, yAxisID: 'y', order: 2 },
-      { type: 'line', label: '누적 매출', data: running, borderColor: C.muted, backgroundColor: C.muted, borderWidth: 2, pointRadius: 3, tension: .3, yAxisID: 'y2', order: 1 },
-      { type: 'line', label: '월 목표', data: MONTH_LABELS.map(() => goal), borderColor: C.goal, borderWidth: 1.5, borderDash: [6, 5], pointRadius: 0, yAxisID: 'y', order: 0 }
+      { type: 'bar', label: '월 매출', data: total.map((v, i) => (i < curMonth ? v : null)), backgroundColor: c.total, borderRadius: 6, maxBarThickness: 38, yAxisID: 'y', order: 2 },
+      { type: 'bar', label: '예정 매출', data: total.map((v, i) => (i >= curMonth && v ? v : null)), backgroundColor: alpha(c.total, .3), borderColor: c.total, borderWidth: 1.5, borderRadius: 6, maxBarThickness: 38, yAxisID: 'y', order: 2 },
+      { type: 'line', label: '누적 매출', data: running, borderColor: c.muted, backgroundColor: c.muted, borderWidth: 2, pointRadius: 3, tension: .3, yAxisID: 'y2', order: 1 },
+      { type: 'line', label: '월 목표', data: MONTH_LABELS.map(() => goal), borderColor: c.goal, borderWidth: 1.5, borderDash: [6, 5], pointRadius: 0, yAxisID: 'y', order: 0 }
     ] },
     options: baseOptions({ scales: Object.assign(baseOptions().scales, {
-      y2: { position: 'right', grid: { display: false }, border: { display: false }, ticks: { color: C.muted, callback: axisWon } } }) })
+      y2: { position: 'right', grid: { display: false }, border: { display: false }, ticks: { color: c.muted, callback: axisWon } } }) })
   });
-  $('#trend-note').textContent = `왼쪽 축: 월 매출 · 오른쪽 축: 누적 매출${fc ? ` · 점선 막대는 오늘 이후 달에 입력된 예정 매출` : ''}`;
+  $('#trend-note').textContent = `왼쪽 축: 월 매출 · 오른쪽 축: 누적 매출${fc ? ' · 연한 막대는 오늘 이후 달에 입력된 예정 매출' : ''}`;
 
-  /* 3) 파트 비교 */
+  // 파트 비교
   const pm = A.plan ? A.plan.months : [], cm = A.commerce ? A.commerce.months : [];
   const filled = a => a.reduce((n, v, i) => (v !== null ? i : n), -1);
   const lastPart = Math.max(filled(pm), filled(cm));
   $('#part-desc').textContent = `월별 매출 · 1~${lastPart + 1}월 입력분`;
-  $('#part-mini').innerHTML = [[A.plan, '--plan'], [A.commerce, '--commerce']].map(([s, c]) => s ?
-    `<div><span><i class="sw" style="background:var(${c})"></i>${s.title} 누적</span><b>${shortWon(sumArr(s.months))}</b><span class="note" style="font-weight:400">${s.note}</span></div>` : '').join('');
+  $('#part-mini').innerHTML = [[A.plan, '--plan'], [A.commerce, '--commerce']].map(([s, v]) => s ?
+    `<div><span><i class="sw" style="background:var(${v})"></i>${s.title} 누적</span><b>${shortWon(sumArr(s.months))}</b><span class="note">${s.note}</span></div>` : '').join('');
   draw('c-part', { type: 'bar',
     data: { labels: MONTH_LABELS.slice(0, lastPart + 1), datasets: [
-      { label: A.plan?.title || '기획파트', data: pm.slice(0, lastPart + 1), backgroundColor: C.plan, borderRadius: 5, maxBarThickness: 22 },
-      { label: A.commerce?.title || '커머스파트', data: cm.slice(0, lastPart + 1), backgroundColor: C.com, borderRadius: 5, maxBarThickness: 22 } ] },
+      { label: A.plan?.title || '기획파트', data: pm.slice(0, lastPart + 1), backgroundColor: c.plan, borderRadius: 5, maxBarThickness: 22 },
+      { label: A.commerce?.title || '커머스파트', data: cm.slice(0, lastPart + 1), backgroundColor: c.com, borderRadius: 5, maxBarThickness: 22 } ] },
     options: baseOptions() });
-  const missing = MONTH_LABELS.filter((_, i) => i < curMonth && (pm[i] === null || cm[i] === null) && i > lastPart);
+  const missing = MONTH_LABELS.filter((_, i) => i < curMonth && i > lastPart);
   $('#part-note').textContent = `두 파트는 수수료·비용을 뺀 기준이라 더해도 팀 전체 매출과 같지 않아요.${missing.length ? ` ${missing.join(', ')}은 아직 미입력입니다.` : ''}`;
 
-  /* 4) 사업 비교 */
-  const biz = BUSINESS_NAMES.filter(n => A.byName[n]);
-  const bizColors = [C.b1, C.b2];
-  $('#biz-mini').innerHTML = biz.map((n, i) => `<div><span><i class="sw" style="background:${bizColors[i % 2]}"></i>${n} 누적</span><b>${shortWon(sumArr(A.byName[n].months))}</b><span class="note" style="font-weight:400">${Object.keys(A.byName[n].types).join(' · ')}</span></div>`).join('');
-  draw('c-biz', { type: 'line',
-    data: { labels: MONTH_LABELS.slice(0, Math.max(curMonth, 1)), datasets: biz.map((n, i) => ({
-      label: n, data: A.byName[n].months.slice(0, Math.max(curMonth, 1)), borderColor: bizColors[i % 2], backgroundColor: alpha(bizColors[i % 2], .12),
-      fill: true, tension: .3, borderWidth: 2.5, pointRadius: 3 })) },
-    options: baseOptions() });
+  // 매출 구성 (사업 vs 크리에이터)
+  const upto = Math.max(curMonth, 1);
+  const sb = A.byName['소셜박스']?.months || [], bc = A.byName['바디코']?.months || [];
+  const crSum = sumArr(A.creatorMonthly);
+  $('#mix-mini').innerHTML = [['소셜박스', '--biz1', sumArr(sb)], ['바디코', '--biz2', sumArr(bc)], ['크리에이터', '--plan', crSum]]
+    .map(([n, v, s]) => `<div><span><i class="sw" style="background:var(${v})"></i>${n}</span><b>${shortWon(s)}</b><span class="note">전체의 ${(s / totalCum * 100).toFixed(1)}%</span></div>`).join('');
+  draw('c-mix', { type: 'bar',
+    data: { labels: MONTH_LABELS.slice(0, upto), datasets: [
+      { label: '소셜박스', data: sb.slice(0, upto), backgroundColor: c.b1, maxBarThickness: 30 },
+      { label: '바디코', data: bc.slice(0, upto), backgroundColor: c.b2, maxBarThickness: 30 },
+      { label: '크리에이터', data: A.creatorMonthly.slice(0, upto), backgroundColor: c.plan, maxBarThickness: 30, borderRadius: { topLeft: 5, topRight: 5 } } ] },
+    options: baseOptions({ scales: { x: { stacked: true, grid: { display: false }, ticks: { color: c.muted } },
+      y: { stacked: true, grid: { color: c.line }, border: { display: false }, ticks: { color: c.muted, callback: axisWon } } } }) });
 
-  /* 5) 크리에이터 순위 */
-  const creators = A.names.filter(n => !A.byName[n].isBusiness)
-    .map(n => ({ n, v: sumArr(A.byName[n].months) })).sort((a, b) => b.v - a.v);
-  $('#rank-box').style.height = Math.max(300, creators.length * 26 + 40) + 'px';
-  draw('c-rank', { type: 'bar',
-    data: { labels: creators.map(c => c.n), datasets: [{ label: '누적 매출', data: creators.map(c => c.v),
-      backgroundColor: creators.map(c => (c.n === selected ? C.total : alpha(C.total, .45))), borderRadius: 4, barThickness: 16 }] },
-    options: baseOptions({ indexAxis: 'y', interaction: { mode: 'nearest', intersect: true, axis: 'y' },
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => fullWon(c.raw) } } },
-      scales: { x: { grid: { color: css('--line') }, border: { display: false }, ticks: { color: css('--muted'), callback: axisWon } },
-                y: { grid: { display: false }, ticks: { color: css('--fg'), font: { family: css('--font'), size: 12.5 } } } },
-      onClick: (e, els) => { if (els.length) { selectCreator(creators[els[0].index].n); } } }) });
-
-  /* 6) 콘텐츠 유형 */
-  renderTypes();
-
-  /* 7) 크리에이터 상세 */
-  const sel = $('#creator-select');
-  const allNames = [...creators.map(c => c.n), ...biz];
-  sel.innerHTML = allNames.map(n => `<option value="${n}">${n}${A.byName[n].isBusiness ? ' (사업)' : ''}</option>`).join('');
-  if (!selected || !A.byName[selected]) selected = creators[0]?.n;
-  sel.value = selected;
-  renderCreator();
-
-  /* 8) 검증 */
-  $('#checks').innerHTML = A.checks.map(c => `<li class="${c.st}"><span class="ic">${c.st === 'ok' ? '✓' : c.st === 'ng' ? '!' : 'i'}</span><span>${c.t}${c.s ? `<small>${c.s}</small>` : ''}</span></li>`).join('');
-  const ng = A.checks.filter(c => c.st === 'ng').length;
-  $('#footer').textContent = `데이터 출처: 구글 스프레드시트(웹에 게시 CSV) · ${AUTO_REFRESH_MINUTES}분마다 자동 새로고침 · 검증 ${ng ? ng + '건 확인 필요' : '모두 통과'}`;
+  // 검증
+  const li = x => `<li class="${x.st}"><span class="ic">${x.st === 'ok' ? '✓' : x.st === 'ng' ? '!' : 'i'}</span><span>${x.t}${x.s ? `<small>${x.s}</small>` : ''}</span></li>`;
+  $('#checks').innerHTML = `<h4>월간 총 매출 시트</h4>` + A.checks.map(li).join('') +
+    `<h4>바디코 원가 정산 시트</h4>` + (B ? B.checks.map(li).join('') : li({ st: 'info', t: bodycoMissingText().title, s: bodycoMissingText().msg }));
 }
 
+/* ───────── 크리에이터별 ───────── */
+function renderCreators() {
+  const c = C();
+  const creators = A.names.filter(n => !A.byName[n].isBusiness).map(n => ({ n, v: sumArr(A.byName[n].months) })).sort((a, b) => b.v - a.v);
+  const crTotal = sumArr(A.creatorMonthly);
+  const active = creators.filter(x => x.v > 0).length;
+  const last = A.lastIdx, lastV = A.creatorMonthly[last] || 0, prevV = last > 0 ? A.creatorMonthly[last - 1] : 0;
+  const topType = Object.entries(A.byTypeCreatorsOnly).map(([t, m]) => [t, sumArr(m)]).sort((a, b) => b[1] - a[1])[0] || ['-', 0];
+  $('#cr-kpis').innerHTML =
+    kpi('크리에이터 누적 매출', shortWon(crTotal), `팀 전체의 ${(crTotal / A.totalCum * 100).toFixed(1)}%`, { hero: '--plan' }) +
+    kpi(`${last + 1}월 크리에이터 매출`, shortWon(lastV), deltaChip(lastV, prevV)) +
+    kpi('매출 1위', creators[0]?.n || '-', `${shortWon(creators[0]?.v || 0)} · 크리에이터 매출의 ${((creators[0]?.v || 0) / crTotal * 100).toFixed(1)}%`) +
+    kpi('매출 발생 크리에이터', `${active}명`, `전체 ${creators.length}명 · 최다 유형 ${topType[0]}`);
+
+  document.getElementById('rank-box').style.height = Math.max(300, creators.length * 26 + 40) + 'px';
+  draw('c-rank', { type: 'bar',
+    data: { labels: creators.map(x => x.n), datasets: [{ label: '누적 매출', data: creators.map(x => x.v),
+      backgroundColor: creators.map(x => (x.n === selected ? c.plan : alpha(c.plan, .45))), borderRadius: 4, barThickness: 16 }] },
+    options: baseOptions({ indexAxis: 'y', interaction: { mode: 'nearest', intersect: true, axis: 'y' },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: x => fullWon(x.raw) } } },
+      scales: { x: { grid: { color: c.line }, border: { display: false }, ticks: { color: c.muted, callback: axisWon } },
+                y: { grid: { display: false }, ticks: { color: c.fg, font: { family: css('--font'), size: 12.5 } } } },
+      onClick: (e, els) => { if (els.length) selectCreator(creators[els[0].index].n, true); } }) });
+
+  renderTypes();
+
+  const sel = $('#creator-select');
+  sel.innerHTML = creators.map(x => `<option value="${x.n}">${x.n}</option>`).join('');
+  if (!selected || !A.byName[selected] || A.byName[selected].isBusiness) selected = creators[0]?.n;
+  sel.value = selected;
+  renderCreator();
+}
 function renderTypes() {
   const inc = $('#inc-biz').checked;
   const src = inc ? A.byType : A.byTypeCreatorsOnly;
   const rows = Object.entries(src).map(([t, m]) => ({ t, v: sumArr(m) })).filter(r => r.v !== 0).sort((a, b) => b.v - a.v);
-  const all = rows.reduce((s, r) => s + r.v, 0);
-  const palette = ['--total', '--plan', '--commerce', '--biz1', '--biz2', '--goal', '--muted'].map(css);
+  const all = rows.reduce((s, r) => s + r.v, 0), pal = PALETTE();
   draw('c-type', { type: 'bar',
-    data: { labels: rows.map(r => r.t), datasets: [{ label: '매출', data: rows.map(r => r.v), backgroundColor: rows.map((_, i) => palette[i % palette.length]), borderRadius: 6, maxBarThickness: 46 }] },
-    options: baseOptions({ plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${fullWon(c.raw)} (${(c.raw / all * 100).toFixed(1)}%)` } } } }) });
+    data: { labels: rows.map(r => r.t), datasets: [{ label: '매출', data: rows.map(r => r.v), backgroundColor: rows.map((_, i) => pal[i % pal.length]), borderRadius: 6, maxBarThickness: 46 }] },
+    options: baseOptions({ plugins: { legend: { display: false }, tooltip: { callbacks: { label: x => `${fullWon(x.raw)} (${(x.raw / all * 100).toFixed(1)}%)` } } } }) });
   $('#t-type').innerHTML = `<thead><tr><th>유형</th><th>매출</th><th>비중</th></tr></thead><tbody>${rows.map(r => `<tr><td>${r.t}</td><td>${fullWon(r.v)}</td><td>${(r.v / all * 100).toFixed(1)}%</td></tr>`).join('')}</tbody><tfoot><tr><td>합계</td><td>${fullWon(all)}</td><td>100%</td></tr></tfoot>`;
 }
-
-function selectCreator(n) { selected = n; $('#creator-select').value = n; renderCreator();
-  const ch = charts['c-rank']; if (ch) { ch.data.datasets[0].backgroundColor = ch.data.labels.map(l => (l === n ? css('--total') : alpha(css('--total'), .45))); ch.update('none'); }
-  document.getElementById('c-creator').scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-
+function selectCreator(n, scroll) {
+  selected = n; $('#creator-select').value = n; renderCreator();
+  const ch = charts['c-rank'];
+  if (ch) { ch.data.datasets[0].backgroundColor = ch.data.labels.map(l => (l === n ? css('--plan') : alpha(css('--plan'), .45))); ch.update('none'); }
+  if (scroll) document.getElementById('c-creator').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function monthTable(el, rowsArr, footLabel, footMonths) {
+  const cell = v => `<td class="${v ? '' : 'zero'}">${v ? fullWon(v) : '–'}</td>`;
+  el.innerHTML = `<thead><tr><th>유형</th>${MONTH_LABELS.map(m => `<th>${m}</th>`).join('')}<th>합계</th></tr></thead>
+    <tbody>${rowsArr.map(([t, m]) => `<tr><td>${t}</td>${m.map(cell).join('')}<td>${fullWon(sumArr(m))}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>${footLabel}</td>${footMonths.map(cell).join('')}<td>${fullWon(sumArr(footMonths))}</td></tr></tfoot>`;
+}
 function renderCreator() {
-  const c = A.byName[selected]; if (!c) return;
-  const types = Object.entries(c.types).filter(([, m]) => m.some(v => v));
-  const palette = ['--total', '--plan', '--commerce', '--biz1', '--biz2', '--goal'].map(css);
-  const upto = Math.max(A.curMonth, ...c.months.map((v, i) => (v ? i + 1 : 0)));
+  const cr = A.byName[selected]; if (!cr) return;
+  const types = Object.entries(cr.types).filter(([, m]) => m.some(v => v)), pal = PALETTE();
+  const upto = Math.max(A.curMonth, ...cr.months.map((v, i) => (v ? i + 1 : 0)));
   draw('c-creator', { type: 'bar',
-    data: { labels: MONTH_LABELS.slice(0, upto), datasets: types.map(([t, m], i) => ({ label: t, data: m.slice(0, upto), backgroundColor: palette[i % palette.length], borderRadius: 4, maxBarThickness: 34 })) },
+    data: { labels: MONTH_LABELS.slice(0, upto), datasets: types.map(([t, m], i) => ({ label: t, data: m.slice(0, upto), backgroundColor: pal[i % pal.length], maxBarThickness: 34 })) },
     options: baseOptions({ scales: { x: { stacked: true, grid: { display: false }, ticks: { color: css('--muted') } },
       y: { stacked: true, grid: { color: css('--line') }, border: { display: false }, ticks: { color: css('--muted'), callback: axisWon } } } }) });
-  const cell = v => `<td class="${v ? '' : 'zero'}">${v ? fullWon(v) : '–'}</td>`;
-  const typeRows = Object.entries(c.types);
-  $('#t-creator').innerHTML = `<thead><tr><th>유형</th>${MONTH_LABELS.map(m => `<th>${m}</th>`).join('')}<th>합계</th></tr></thead>
-    <tbody>${typeRows.map(([t, m]) => `<tr><td>${t}</td>${m.map(cell).join('')}<td>${fullWon(sumArr(m))}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td>${selected} 합계</td>${c.months.map(cell).join('')}<td>${fullWon(sumArr(c.months))}</td></tr></tfoot>`;
+  monthTable($('#t-creator'), Object.entries(cr.types), `${selected} 합계`, cr.months);
 }
 
-/* 이벤트 */
-$('#refresh').addEventListener('click', loadFromUrl);
+/* ───────── 사업 탭 공통 (소셜박스·바디코) ───────── */
+function bizKpis(name, colorVar) {
+  const b = A.byName[name]; if (!b) return `<p class="note">"${name}" 줄을 시트에서 찾지 못했어요.</p>`;
+  const m = b.months, cum = sumArr(m), last = A.lastIdx, lastV = m[last] || 0, prevV = last > 0 ? m[last - 1] : 0;
+  const act = A.actualIdx.filter(i => i <= last), avg = act.length ? act.reduce((s, i) => s + m[i], 0) / act.length : 0;
+  const best = act.reduce((x, i) => (m[i] > m[x] ? i : x), act[0] ?? 0);
+  return kpi(`${name} 누적 매출`, shortWon(cum), `팀 전체의 ${(cum / A.totalCum * 100).toFixed(1)}%`, { hero: colorVar }) +
+    kpi(`${last + 1}월 매출`, shortWon(lastV), lastV === 0 && last === A.curMonth - 1 ? '이번 달 아직 미입력' : deltaChip(lastV, prevV)) +
+    kpi('월 평균 매출', shortWon(avg), `1~${last + 1}월 기준`) +
+    kpi('최고 매출 월', `${best + 1}월`, shortWon(m[best] || 0));
+}
+function bizChart(id, name, colorVar) {
+  const b = A.byName[name]; if (!b) return;
+  const upto = Math.max(A.curMonth, 1), col = css(colorVar), c = C();
+  const share = b.months.slice(0, upto).map((v, i) => (A.total[i] ? v / A.total[i] * 100 : null));
+  draw(id, { data: { labels: MONTH_LABELS.slice(0, upto), datasets: [
+      { type: 'bar', label: `${name} 매출`, data: b.months.slice(0, upto), backgroundColor: col, borderRadius: 6, maxBarThickness: 40, yAxisID: 'y', order: 2 },
+      { type: 'line', label: '팀 매출 대비 비중', data: share, borderColor: c.muted, backgroundColor: c.muted, borderWidth: 2, pointRadius: 3, tension: .3, yAxisID: 'y2', order: 1 } ] },
+    options: baseOptions({
+      plugins: Object.assign(baseOptions().plugins, { tooltip: { callbacks: { label: x => x.dataset.yAxisID === 'y2' ? `비중: ${x.raw === null ? '-' : x.raw.toFixed(1) + '%'}` : `${x.dataset.label}: ${fullWon(x.raw ?? 0)}` } } }),
+      scales: Object.assign(baseOptions().scales, { y2: { position: 'right', min: 0, max: 100, grid: { display: false }, border: { display: false }, ticks: { color: c.muted, callback: v => v + '%' } } }) }) });
+}
+
+function renderSocialbox() {
+  $('#sb-kpis').innerHTML = bizKpis('소셜박스', '--biz1');
+  bizChart('c-sb', '소셜박스', '--biz1');
+  const b = A.byName['소셜박스'];
+  if (b) monthTable($('#t-sb'), b.rows.map((r, i) => [`${r.rawType}${b.rows.length > 1 ? ` (${i + 1}번째 줄)` : ''}`, r.months]), '소셜박스 합계', b.months);
+}
+
+function bodycoMissingText() {
+  if (!BODYCO_CSV_URL && !B) return { title: '원가 정산 시트가 아직 연결되지 않았어요',
+    msg: 'index.html 위쪽 설정의 BODYCO_CSV_URL에 바디코 원가 정산 탭의 웹에 게시 CSV 링크를 넣으면 자동으로 연동돼요. 지금은 오른쪽 위 "CSV 직접 올리기"로 파일을 열어볼 수 있어요.' };
+  return { title: '원가 정산 시트를 불러오지 못했어요', msg: (B_err || '') + ' 오른쪽 위 "CSV 직접 올리기"로 파일을 열어볼 수도 있어요.' };
+}
+function renderBodyco() {
+  const c = C();
+  bizChart('c-bc', '바디코', '--biz2');
+  if (!B) {
+    $('#bc-kpis').innerHTML = bizKpis('바디코', '--biz2');
+    const t = bodycoMissingText();
+    $('#bc-missing-title').textContent = t.title; $('#bc-missing-msg').textContent = t.msg;
+    $('#bc-missing').hidden = false; $('#bc-settle').hidden = true;
+    return;
+  }
+  $('#bc-missing').hidden = true; $('#bc-settle').hidden = false;
+  const b = A.byName['바디코'], cum = b ? sumArr(b.months) : 0;
+  const lastP = B.periods.at(-1);
+  $('#bc-kpis').innerHTML =
+    kpi('바디코 누적 매출', shortWon(cum), b ? `팀 전체의 ${(cum / A.totalCum * 100).toFixed(1)}% · 자체몰` : '', { hero: '--biz2' }) +
+    kpi(`${A.lastIdx + 1}월 매출`, shortWon(b ? b.months[A.lastIdx] || 0 : 0), b ? ((b.months[A.lastIdx] || 0) === 0 ? '이번 달 아직 미입력' : deltaChip(b.months[A.lastIdx], b.months[A.lastIdx - 1])) : '') +
+    kpi('정산 판매수량', `${num(B.totalQty)}건`, `${B.periods[0].label}~${lastP.label} · 증정 ${num(B.totalGift)}건 포함`) +
+    kpi('원가 정산 금액', shortWon(B.totalAmt), `최근 ${lastP.label} ${shortWon(lastP.amt)}`);
+
+  // 정산 기간별 요약 (같은 기간의 자체몰 매출과 나란히)
+  $('#bc-periods').innerHTML = B.periods.map(p => {
+    let sales = null;
+    if (b && p.from && p.to) sales = sumArr(b.months.slice(p.from - 1, p.to));
+    return `<div><span>${p.label} 정산</span><b>${shortWon(p.amt)}</b><span class="note">판매 ${num(p.saleQty)}건${p.giftQty ? ` · 증정 ${num(p.giftQty)}건` : ''}${sales !== null ? ` · 같은 기간 자체몰 매출 ${shortWon(sales)}` : ''}</span></div>`;
+  }).join('');
+
+  // 품목 순서: 전체 판매수량 많은 순
+  const tot = k => sumArr(B.periods.map(p => p.byKey[k]?.saleQty || 0));
+  const keys = [...B.keys].sort((a, b2) => tot(b2) - tot(a));
+  const name = k => B.labels[k].name;
+  const pal = [c.b2, c.total, c.b1, c.plan, c.com, c.goal];
+  draw('c-bc-qty', { type: 'bar',
+    data: { labels: keys.map(name), datasets: B.periods.map((p, i) => ({ label: p.label, data: keys.map(k => p.byKey[k]?.saleQty || 0), backgroundColor: i === B.periods.length - 1 ? c.b2 : alpha(c.b2, .3 + .5 * i / Math.max(1, B.periods.length - 1)), borderRadius: 4, maxBarThickness: 22 })) },
+    options: baseOptions({ plugins: Object.assign(baseOptions().plugins, { tooltip: { callbacks: { label: x => `${x.dataset.label}: ${num(x.raw)}건` } } }),
+      scales: Object.assign(baseOptions().scales, { y: { grid: { color: c.line }, border: { display: false }, ticks: { color: c.muted } } }) }) });
+  const amtRows = keys.map(k => ({ k, v: sumArr(B.periods.map(p => p.byKey[k]?.amt || 0)) })).sort((a, b2) => b2.v - a.v);
+  draw('c-bc-amt', { type: 'bar',
+    data: { labels: amtRows.map(r => name(r.k)), datasets: [{ label: '정산 금액', data: amtRows.map(r => r.v), backgroundColor: amtRows.map((_, i) => pal[i % pal.length]), borderRadius: 4, barThickness: 18 }] },
+    options: baseOptions({ indexAxis: 'y', interaction: { mode: 'nearest', intersect: true, axis: 'y' }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: x => fullWon(x.raw) } } },
+      scales: { x: { grid: { color: c.line }, border: { display: false }, ticks: { color: c.muted, callback: axisWon } }, y: { grid: { display: false }, ticks: { color: c.fg, font: { family: css('--font') } } } } }) });
+
+  // 상세 표
+  const head = B.periods.map(p => `<th>${p.label} 수량</th><th>${p.label} 정산</th>`).join('');
+  const body = keys.map(k => {
+    const costs = B.periods.map(p => p.byKey[k]?.cost).filter(v => v != null);
+    const changed = new Set(costs).size > 1;
+    return `<tr><td>${name(k)}</td>${B.periods.map(p => { const x = p.byKey[k];
+      return x ? `<td>${num(x.saleQty)}${x.giftQty ? ` <span class="tag">+증정 ${num(x.giftQty)}</span>` : ''}</td><td>${fullWon(x.amt)}</td>` : '<td class="zero">–</td><td class="zero">–</td>'; }).join('')}
+      <td>${costs.length ? fullWon(costs.at(-1)) : '–'}${changed ? ` <span class="tag">${fullWon(costs[0])}에서 변경</span>` : ''}</td></tr>`;
+  }).join('');
+  $('#t-bc').innerHTML = `<thead><tr><th>품목</th>${head}<th>최근 원가</th></tr></thead><tbody>${body}</tbody>
+    <tfoot><tr><td>합계</td>${B.periods.map(p => `<td>${num(p.qty)}</td><td>${fullWon(p.amt)}</td>`).join('')}<td></td></tr></tfoot>`;
+  const li = x => `<li class="${x.st}"><span class="ic">${x.st === 'ok' ? '✓' : x.st === 'ng' ? '!' : 'i'}</span><span>${x.t}${x.s ? `<small>${x.s}</small>` : ''}</span></li>`;
+  $('#bc-checks').innerHTML = `<h4>원가 정산 시트 검증</h4>` + B.checks.map(li).join('');
+}
+
+/* ── 이벤트 ── */
+document.querySelectorAll('.tabs [data-view]').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+window.addEventListener('hashchange', () => showView(location.hash.slice(1), false));
+$('#refresh').addEventListener('click', loadAll);
 $('#creator-select').addEventListener('change', e => selectCreator(e.target.value));
 $('#inc-biz').addEventListener('change', renderTypes);
 $('#file-input').addEventListener('change', async e => {
-  const f = e.target.files[0]; if (!f) return;
-  handleText(new TextDecoder('utf-8').decode(await f.arrayBuffer()), '올린 파일 ' + f.name);
+  for (const f of e.target.files) {
+    try {
+      const rows = toRows(new TextDecoder('utf-8').decode(await f.arrayBuffer()));
+      const kind = detectSheet(rows);
+      if (kind === 'main') applyMain(rows, '올린 파일');
+      else if (kind === 'bodyco') applyBodyco(rows, '올린 파일');
+      else throw new Error(`"${f.name}"이 어떤 시트인지 알 수 없어요. 월간 총 매출 또는 바디코 원가 정산 CSV를 올려 주세요.`);
+    } catch (err) { showError('파일을 읽지 못했어요', err.message); }
+  }
   e.target.value = '';
+  updateStatus();
+  if (A) renderAll();
 });
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => A && render());
-setInterval(() => { if (document.visibilityState === 'visible') loadFromUrl(); }, AUTO_REFRESH_MINUTES * 60 * 1000);
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && A) loadFromUrl(); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => A && renderView());
+setInterval(() => { if (document.visibilityState === 'visible') loadAll(); }, AUTO_REFRESH_MINUTES * 60 * 1000);
 
-loadFromUrl();
+showView(location.hash.slice(1), false);
+loadAll();
 }
 </script>
 </body>
 </html>
-콘텐츠사업팀 매출 대시보드
